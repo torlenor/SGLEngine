@@ -31,6 +31,17 @@
 
 class SGLEngine {
   public:
+    struct Object {
+      std::vector<GLfloat> vertices;
+      std::vector<GLfloat> normals;
+      std::vector<GLfloat> colors;
+      std::vector<GLuint> indices;
+
+      GLuint vboid;
+      GLuint indid;
+      GLuint shader;
+    };
+
     SGLEngine();
     ~SGLEngine();
 
@@ -40,16 +51,14 @@ class SGLEngine {
     int ObjParser(std::string filepath, std::vector<float> &out_vertices, 
         std::vector<float> &out_normals, std::vector<unsigned int> &out_indices);
     
+    int ObjParser(std::string filepath, Object &out_object);
+    
     GLuint LoadShaders(const char * vertex_file_path, 
         const char * fragment_file_path);
 
-    struct Object {
-      std::vector<GLfloat> vertices;
-      std::vector<GLfloat> normals;
-      std::vector<GLfloat> colors;
-      std::vector<GLuint> indices;
-      GLuint vboid;
-      GLuint indid;
+    
+    struct Scene {
+      std::vector<Object> objects;
     };
 
   private:
@@ -60,9 +69,6 @@ class SGLEngine {
     bool ObjFindIndex(std::vector<float> &out_vertices, 
         std::vector<float> &out_normals, std::vector<float> &vertex, 
         std::vector<float> &normal, unsigned int &result);
-    void ObjCreateIndex(std::vector<float> &in_vertices, 
-        std::vector<float> &in_normals, std::vector<float> &out_vertices, 
-        std::vector<float> &out_normals, std::vector<unsigned int> &out_indices);
 };
 
 #endif // SGLENGINE_H

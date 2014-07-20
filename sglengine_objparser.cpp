@@ -7,7 +7,7 @@
 
 #include "sglengine.h"
 
-int SGLEngine::ObjParser(std::string filepath, std::vector<float> &out_vertices, std::vector<float> &out_normals, std::vector<unsigned int> &out_indices) {
+int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
   // Simple importer for object files.
   // Settings in Blender: - Triangles
   //                      - Normals
@@ -96,9 +96,9 @@ int SGLEngine::ObjParser(std::string filepath, std::vector<float> &out_vertices,
   #endif
   
   // Create an index for the vertices
-  out_vertices.resize(0);
-  out_normals.resize(0);
-  out_indices.resize(0);
+  out_object.vertices.resize(0);
+  out_object.normals.resize(0);
+  out_object.indices.resize(0);
 
   std::vector<float> vertex;
   std::vector<float> normal;
@@ -117,19 +117,19 @@ int SGLEngine::ObjParser(std::string filepath, std::vector<float> &out_vertices,
     normal[1] = normals.at(i + 1);
     normal[2] = normals.at(i + 2);
 
-    bool res = ObjFindIndex(out_vertices, out_normals, vertex, normal, result);
+    bool res = ObjFindIndex(out_object.vertices, out_object.normals, vertex, normal, result);
 
     if ( res == true ) {
-      out_indices.push_back(result);
+      out_object.indices.push_back(result);
     } else {
-      out_vertices.push_back(vertex[0]);
-      out_vertices.push_back(vertex[1]);
-      out_vertices.push_back(vertex[2]);
-      out_normals.push_back(normal[0]);
-      out_normals.push_back(normal[1]);
-      out_normals.push_back(normal[2]);
+      out_object.vertices.push_back(vertex[0]);
+      out_object.vertices.push_back(vertex[1]);
+      out_object.vertices.push_back(vertex[2]);
+      out_object.normals.push_back(normal[0]);
+      out_object.normals.push_back(normal[1]);
+      out_object.normals.push_back(normal[2]);
 
-      out_indices.push_back(index);
+      out_object.indices.push_back(index);
       index++;
     }
   }
