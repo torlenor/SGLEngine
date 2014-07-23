@@ -24,4 +24,4 @@ add_executable(test test.cpp sglengine.cpp sglengine_objparser.cpp)
 
 # linking "glfw" and not "glfw3" 
 # assumes that glfw was built with BUILD_SHARED_LIBS to ON
-target_link_libraries(test ${GLFW_LIBRARIES} ${GL_LIBRARY} ${X11_LIBRARIES} m Xxf86vm pthread Xi Xrandr)
+target_link_libraries(test ${GLFW_LIBRARIES} ${GL_LIBRARY} ${X11_LIBRARIES} m Xxf86vm pthread Xi Xrandr GLEW)

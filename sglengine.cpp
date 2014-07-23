@@ -61,6 +61,11 @@ int SGLEngine::Init() {
   return 0;
 }
 
+int SGLEngine::SetupScene() {
+  
+  return 0;
+}
+
 void SGLEngine::Run() {
   while (!glfwWindowShouldClose(window))
     Render();

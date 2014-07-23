@@ -46,10 +46,13 @@ class SGLEngine {
     ~SGLEngine();
 
     int Init(); // Inititializes OpenGL
+    
+    int SetupScene(); // Build the scene prior to rendering
+
     void Run(); // Main loop
 
-    int ObjParser(std::string filepath, std::vector<float> &out_vertices, 
-        std::vector<float> &out_normals, std::vector<unsigned int> &out_indices);
+//    int ObjParser(std::string filepath, std::vector<float> &out_vertices, 
+//        std::vector<float> &out_normals, std::vector<unsigned int> &out_indices);
     
     int ObjParser(std::string filepath, Object &out_object);
     
@@ -60,9 +63,11 @@ class SGLEngine {
     struct Scene {
       std::vector<Object> objects;
     };
+    
+  protected:
+    GLFWwindow *window;
 
   private:
-    GLFWwindow *window;
     void Render(); // Has to be overloaded to be useful
 
     inline bool ObjIsNear(float a, float b);

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,8 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
     printf("Could not open file!\n");
     return 1;
   }
+
+  std::cout << "Loading " << filepath << " ..." << std::endl; 
 
   while(1) {
     char lineheader[128];
