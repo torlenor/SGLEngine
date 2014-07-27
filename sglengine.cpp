@@ -23,7 +23,13 @@
 
 #include <iostream>
 
-#include <GL/gl.h>
+#include <GL/glew.h>
+
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 #include <GLFW/glfw3.h>
 
 SGLEngine::SGLEngine() {
@@ -45,16 +51,21 @@ int SGLEngine::Init() {
   if (!glfwInit())
     exit(EXIT_FAILURE);
 
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
   window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
   if (!window) {
       glfwTerminate();
       exit(EXIT_FAILURE);
   }
+
+  glfwMakeContextCurrent(window);
+  glewExperimental = GL_TRUE;
+  if( GLEW_OK != glewInit() )
+    exit(EXIT_FAILURE);
 
   fputs("Window Created\n", stdout);
 

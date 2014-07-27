@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
-project( SIMPLE_PROJECT ) # this is case sensitive 
+project( SGLENGINE_PROJECT ) # this is case sensitive 
 
 ######################################
-# finds OpenGL, GLU and X11
+
 find_package(OpenGL REQUIRED)
 find_package(X11 REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -12,16 +12,22 @@ if(NOT OPENGL_FOUND)
     message("ERROR: OpenGL not found")
 endif(NOT OPENGL_FOUND)
 
-pkg_search_module(GLFW REQUIRED glfw3)
+# pkg_search_module(GLFW REQUIRED glfw3)
+find_package(GLFW REQUIRED)
 include_directories(${GLFW_INCLUDE_DIRS})
+
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
 
 set(GL_LIBRARY GL GLU X11)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-O3 -Wall -std=c++11")
+SET(GCC_ADDITIONAL_COMPILE_FLAGS  "-O3 -Wall -std=c++11")
+SET(GCC_ADDITIONAL_LINK_FLAGS     "-L/opt/local/lib")
+SET(GCC_ADDITIONAL_LIBRARIES      "")
+
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_ADDITIONAL_COMPILE_FLAGS}" )
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_ADDITIONAL_LINK_FLAGS}" )
 
 add_executable(test test.cpp sglengine.cpp sglengine_objparser.cpp)
 
-# linking "glfw" and not "glfw3" 
-# assumes that glfw was built with BUILD_SHARED_LIBS to ON
 target_link_libraries(test ${GLFW_LIBRARIES} ${GL_LIBRARY} ${X11_LIBRARIES} m Xxf86vm pthread Xi Xrandr GLEW)
