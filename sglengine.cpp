@@ -63,6 +63,7 @@ int SGLEngine::Init() {
   }
 
   glfwMakeContextCurrent(window);
+
   glewExperimental = GL_TRUE;
   if( GLEW_OK != glewInit() )
     exit(EXIT_FAILURE);

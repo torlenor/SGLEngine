@@ -1,9 +1,7 @@
 #version 330 core
 
-// in vec4 in_position;
+layout( location = 0 ) in vec4 vPosition;
 
 void main() {
-  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-  gl_FrontColor = gl_Color; //Added line
-  gl_BackColor = gl_Color; //Added line
+  gl_Position = vPosition;
 }
