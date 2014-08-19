@@ -1,5 +1,11 @@
+
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <thread>
+#include <vector>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -10,120 +16,47 @@
   #include <GL/gl.h>
 #endif
 
-// #include <GL/glext.h>
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "sglengine.h"
 
+std::string vertshaderfilename, fragshaderfilename, objectfilename;
 
-
-
-struct Program
-{
-    static GLuint Load( const char* vert, const char* geom, const char* frag )
-    {
-        GLuint prog = glCreateProgram();
-        if( vert ) AttachShader( prog, GL_VERTEX_SHADER, vert );
-        if( geom ) AttachShader( prog, GL_GEOMETRY_SHADER, geom );
-        if( frag ) AttachShader( prog, GL_FRAGMENT_SHADER, frag );
-        glLinkProgram( prog );
-        CheckStatus( prog );
-        return prog;
-    }
-
-private:
-    static void CheckStatus( GLuint obj )
-    {
-        GLint status = GL_FALSE, len = 10;
-        if( glIsShader(obj) )   glGetShaderiv( obj, GL_COMPILE_STATUS, &status );
-        if( glIsProgram(obj) )  glGetProgramiv( obj, GL_LINK_STATUS, &status );
-        if( status == GL_TRUE ) return;
-        if( glIsShader(obj) )   glGetShaderiv( obj, GL_INFO_LOG_LENGTH, &len );
-        if( glIsProgram(obj) )  glGetProgramiv( obj, GL_INFO_LOG_LENGTH, &len );
-        std::vector< char > log( len, 'X' );
-        if( glIsShader(obj) )   glGetShaderInfoLog( obj, len, NULL, &log[0] );
-        if( glIsProgram(obj) )  glGetProgramInfoLog( obj, len, NULL, &log[0] );
-        std::cerr << &log[0] << std::endl;
-        exit( -1 );
-    }
-
-    static void AttachShader( GLuint program, GLenum type, const char* src )
-    {
-        GLuint shader = glCreateShader( type );
-        glShaderSource( shader, 1, &src, NULL );
-        glCompileShader( shader );
-        CheckStatus( shader );
-        glAttachShader( program, shader );
-        glDeleteShader( shader );
-    }
-};
-#define GLSL(version, shader) "#version " #version "\n" #shader
-
-const char* vert = GLSL
-(
-    330 core,
-    layout( location = 0 ) in vec4 vPosition;
-    void main()
-    {
-        gl_Position = vPosition;
-    }
-);
-
-const char* frag = GLSL
-(
-    330 core,
-    out vec4 fColor;
-    void main()
-    {
-        fColor = vec4( 1.0, 0.0, 1.0, 1.0 );
-    }
-);
-
-
-
+SGLEngine::Scene scene1;
 
 class MySGLEngine : public SGLEngine {
   public:
     int SetupScene();
-    void Run();
-  private:
-    GLuint VAOs[1];
-    GLuint Buffers[1];
-    GLuint programID;
 
+  private:
     void Render();
 };
 
 int MySGLEngine::SetupScene() {
-  //std::string filepath("monkey.obj");
-  //if(ObjParser(filepath, obj1) != 0)
-  //  std::cout << "Error loading object " << filepath << " !" << std::endl;
+  SGLEngine::Object obj1;
 
-  glGetError();
+  std::string filepath(objectfilename);
+  if(ObjParser(filepath, obj1) != 0)
+    std::cout << "Error loading object " << filepath << " !" << std::endl;
+
   glfwMakeContextCurrent(window);
-  
-  GLfloat vertices[3][2] = { 
-      { -0.90, -0.90 }, // Triangle 1
-      { 0.85, -0.90 },
-      { -0.90, 0.85 },
-    };  
-  
-  std::cout << "Generating VAOs..." << std::endl;
-  glGenVertexArrays(1, VAOs);
-  glBindVertexArray(VAOs[0]);
-  
-  std::cout << "Copy buffers..." << std::endl;
-  glGenBuffers(1, Buffers);
-  glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*2, vertices, GL_STATIC_DRAW);
-  
-  std::cout << "Loading shaders..." << std::endl;
-  GLuint program = Program::Load( vert, NULL, frag );
-  glUseProgram(program);
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  glEnableVertexAttribArray(0);  
+  for(int i=0; i<obj1.vertices.size(); i++) {
+    obj1.colors.push_back(rand()/(double)RAND_MAX);
+  }
+  
+  /* obj1.uvs.resize(0);
+  for(int i=0; i<obj1.vertices.size()/3*2; i++) {
+    obj1.uvs.push_back(rand()/(double)RAND_MAX);
+  } */
 
-  std::cout << frag << std::endl;
+  obj1.isIndexed = true;
+  
+  SetupObject(obj1);
+  obj1.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, fragshaderfilename.c_str() );
+  scene1.objects.push_back(obj1);
 
   return 0;
 }
@@ -133,34 +66,69 @@ void MySGLEngine::Render() {
   
   glfwMakeContextCurrent(window);
 
-  while (!glfwWindowShouldClose(window))
-  {   
-      glClear(GL_COLOR_BUFFER_BIT);
-  
-      glBindVertexArray(VAOs[0]);
+  static float time=-1;
+  static float delta=0.005;
+
+  while (!glfwWindowShouldClose(window)) {   
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Projection matrix : 70° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    glm::mat4 Projection = glm::perspective(70.0f, 4.0f / 4.0f, 0.1f, 100.0f);
+    // Camera matrix
+     glm::mat4 View = glm::lookAt(
+         glm::vec3(4,2,-3), // Camera is at (4,3,3), in World Space
+         glm::vec3(0,0,0), // and looks at the origin
+         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+    );
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat4 Model = glm::rotate(glm::mat4(1.0f), (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+    for(int i=0; i<scene1.objects.size(); i++) {
+      glBindVertexArray(scene1.objects[i].vaoid[0]);
+      glUseProgram(scene1.objects[i].shader);
       
-      glDrawArrays(GL_TRIANGLES, 0, 3);
-      
+      GLuint MatrixID = glGetUniformLocation(scene1.objects[i].shader, "MVP");
+      glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+      GLuint TextureID  = glGetUniformLocation(scene1.objects[i].shader, "myTextureSampler");
+      glUniform1i(TextureID, 0);
+
+      if (scene1.objects[i].isIndexed) {
+        glDrawElements(GL_TRIANGLES, scene1.objects[i].indices.size(), GL_UNSIGNED_INT, 0);
+      } else {
+        glDrawArrays(GL_TRIANGLES, 0, scene1.objects[i].vertices.size()/3); 
+      }
+
       GLenum glerr;
       while ((glerr = glGetError()) != GL_NO_ERROR)
         std::cerr << "OpenGL error: " << glerr << std::endl;
+    }
 
-      glfwSwapBuffers(window);
-      glfwPollEvents();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    
+    time += delta;
+    if (time > 1) { time = 0;}
   }   
 }
 
-void MySGLEngine::Run() {
+int main(int argc, char *argv[]) {
 
-  while (!glfwWindowShouldClose(window))
-    Render();
-}
+  if (argc < 4) {
+    std::cout << "./test.x object vertexshader fragmentshader" << std::endl;
+    exit(1);
+  }
 
-int main() {
+  objectfilename = argv[1];
+  vertshaderfilename = argv[2];
+  fragshaderfilename = argv[3];
+
   MySGLEngine e;
 
   e.Init();
-
 
   std::cout << "Setting up scene..." << std::endl;
   e.SetupScene();

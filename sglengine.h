@@ -42,11 +42,22 @@ class SGLEngine {
       std::vector<GLfloat> vertices;
       std::vector<GLfloat> normals;
       std::vector<GLfloat> colors;
+      std::vector<GLfloat> uvs;
       std::vector<GLuint> indices;
 
-      GLuint vboid;
+      bool isIndexed;
+      bool usesUVs;
+
+      std::vector<GLuint> vaoid;
+      std::vector<GLuint> bufferid;
       GLuint indid;
       GLuint shader;
+
+      std::vector<GLfloat> currentPos[3];
+    };
+    
+    struct Scene {
+      std::vector<Object> objects;
     };
 
     SGLEngine();
@@ -54,33 +65,32 @@ class SGLEngine {
 
     int Init(); // Inititializes OpenGL
     
+    int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
+
+    void CheckStatus(GLuint obj);
+    void AttachShader(GLuint program, GLenum type, const char* src);
+    GLuint LoadShaders(const char* vertFileName, const char* geomFileName, const char* fragFileName);
 
     void Run(); // Main loop
 
-//    int ObjParser(std::string filepath, std::vector<float> &out_vertices, 
-//        std::vector<float> &out_normals, std::vector<unsigned int> &out_indices);
-    
     int ObjParser(std::string filepath, Object &out_object);
-    
-    GLuint LoadShaders(const char * vertex_file_path, 
-        const char * fragment_file_path);
-
-    
-    struct Scene {
-      std::vector<Object> objects;
-    };
     
   protected:
     GLFWwindow *window;
 
   private:
-    void Render(); // Has to be overloaded to be useful
+    virtual void Render(); // Has to be overloaded to be useful
 
     inline bool ObjIsNear(float a, float b);
     bool ObjFindIndex(std::vector<float> &out_vertices, 
         std::vector<float> &out_normals, std::vector<float> &vertex, 
         std::vector<float> &normal, unsigned int &result);
+
+    bool ObjFindIndex(std::vector<float> &out_vertices, 
+        std::vector<float> &out_normals, std::vector<float> &out_uvs, 
+        std::vector<float> &vertex, std::vector<float> &normal, 
+        std::vector<float> &uv, unsigned int &result);
 };
 
 #endif // SGLENGINE_H
