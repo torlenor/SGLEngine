@@ -89,6 +89,7 @@ int SGLEngine::Init() {
   glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
+  glEnable(GL_CULL_FACE);
 
   return 0;
 }
@@ -221,32 +222,72 @@ void SGLEngine::Render() {
   // has to be implemented in derived class
 }
 
+void SGLEngine::PrintFPS() {
+  static int g_measurecount=-1;
+  static double g_averagems=0;
+  static double timebase=0;
+  static double ttime=0;
+  static int frame=0;
+
+  ttime = glfwGetTime();
+
+  frame++;
+
+  int ns=1.0;
+  if (ttime - timebase > ns) {
+    if(g_measurecount != -1){
+      g_averagems += 1000.0*(ttime-timebase)/(double)frame;
+    }
+    g_measurecount++;
+
+    printf("FPS = %4.2f; Average time to render frame = %4.2f ms\n",
+      1.0*frame*(double)ns/(ttime-timebase),
+      1000.0*(ttime-timebase)/(double)frame);
+    printf("Total average time to render frame: %4.2f ms\n", g_averagems/(double)g_measurecount);
+    timebase = ttime;
+    frame = 0;
+  }
+}
+
 void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
-  std::cout << "Rendering..." << std::endl;
-  
   glfwMakeContextCurrent(window);
 
-  static float time=-1;
-  static float delta=0.005;
+  static float time = 0;
+  static float delta = 0.2;
 
-  while (!glfwWindowShouldClose(window)) {   
+  double oldtime=glfwGetTime();
+  double newtime=0;
+  double deltaTime=0;
+
+  while (!glfwWindowShouldClose(window)) {
+    newtime = glfwGetTime();
+    deltaTime = newtime - oldtime;
+    oldtime = newtime;
+    
+    time += delta*(deltaTime);
+    if (time > 1) { time = 0; } 
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    scene.camPositionOffset += scene.deltaCamPosition;
-    scene.camRotY += scene.deltaCamRotY;
+    float ratio;
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    ratio = width/(float)height;
 
-    glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 4.0f, 0.1f, 100.0f);
+    scene.camPositionOffset += scene.deltaCamPosition*(float)(deltaTime);
+    scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
 
-    /* glm::mat4 View = glm::lookAt(
-         scene.camPosition, // Camera is at (4,3,3), in World Space
-         glm::vec3(0,0,0), // and looks at the origin
+    glm::mat4 Projection = glm::perspective(45.0f, 4.0f/4.0f, 0.1f, 100.0f);
+
+    glm::mat4 View = glm::lookAt(
+         scene.camPositionOffset, // Camera is at (4,3,3), in World Space
+         scene.camPositionOffset + glm::vec3(sin(scene.camRotY),0.0,cos(scene.camRotY)), // and looks at the origin
          glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-    ); */
-    glm::mat4 View = glm::rotate(glm::mat4(1.0f), (float)scene.camRotY, glm::vec3(0.0f, 1.0f, 0.0f));
-    View = glm::translate(View, scene.camPositionOffset);
+    );
 
     for(int i=0; i<scene.objects.size(); i++) {
-      glm::mat4 Model = glm::translate(glm::mat4(1.0), scene.objects[i].currentPos);
+      glm::mat4 Model = glm::translate(glm::mat4(1.0f), scene.objects[i].currentPos);
+      Model = glm::scale(Model, scene.objects[i].scale);
       Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
       Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
 
@@ -270,14 +311,14 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       GLenum glerr;
       while ((glerr = glGetError()) != GL_NO_ERROR)
         std::cerr << "OpenGL error: " << glerr << std::endl;
-    }   
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
-    
-    time += delta;
-    if (time > 1) { time = 0;} 
-  }   
+
+    PrintFPS();
+
+  }
 }
 
 void SGLEngine::CheckStatus( GLuint obj ) { 
@@ -292,7 +333,7 @@ void SGLEngine::CheckStatus( GLuint obj ) {
   if( glIsProgram(obj) )  glGetProgramInfoLog( obj, len, NULL, &log[0] );
   std::cerr << &log[0] << std::endl;
   exit( -1 );
-}   
+}
 
 void SGLEngine::AttachShader( GLuint program, GLenum type, const char* src ) { 
   GLuint shader = glCreateShader( type );
@@ -355,5 +396,5 @@ GLuint SGLEngine::LoadShaders(const char* vertFileName, const char* geomFileName
   glLinkProgram(prog);
   CheckStatus(prog);
   return prog;
-}   
+}
 

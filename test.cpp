@@ -43,39 +43,49 @@ class MySGLEngine : public SGLEngine {
 MySGLEngine e;
 void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
   if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = 0.5;
+    scene1.deltaCamPosition.z = 10.0;
   if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
+  
+  if (key == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {
+    Object obj = scene1.objects[0];
+    obj.currentPos = glm::vec3(rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5)*10.0f;
+    scene1.objects.push_back(obj);
+  }
+
+  double xpos, ypos;
+  glfwGetCursorPos(window, &xpos, &ypos);
+  std:: cout << xpos << " " << ypos << std::endl;
 }
 
 void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = 0.5;
+    scene1.deltaCamPosition.z = 10.0;
   if (key == GLFW_KEY_W && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
   if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = -0.5;
+    scene1.deltaCamPosition.z = -10.0;
   if (key == GLFW_KEY_S && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
   if (key == GLFW_KEY_A && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = 0.5;
+    scene1.deltaCamPosition.x = 10.0;
   if (key == GLFW_KEY_A && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_D && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = -0.5;
+    scene1.deltaCamPosition.x = -10.0;
   if (key == GLFW_KEY_D && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-    scene1.deltaCamRotY = 0.01;
+    scene1.deltaCamRotY = 2.0*M_PI/(float)8.0;
   if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    scene1.deltaCamRotY = -0.01;
+    scene1.deltaCamRotY = -2.0*M_PI/(float)8.0;
   if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
 }
@@ -99,36 +109,55 @@ int MySGLEngine::SetupScene() {
     obj1.colors.push_back(rand()/(double)RAND_MAX);
   }
    
-
   obj1.isIndexed = true;
   SetupObject(obj1);
   obj1.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, fragshaderfilename.c_str() );
 
 
+  obj1.scale = glm::vec3(0.2,0.2,0.2);
+
   obj1.currentPos = glm::vec3(0.0,0.0,0.0);
   scene1.objects.push_back(obj1);
 
-  obj1.currentPos = glm::vec3(3.0,3.0,3.0);
+  obj1.currentPos = glm::vec3(3.0,3.0,0.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(3.0,-3.0,3.0);
+  obj1.currentPos = glm::vec3(3.0,-3.0,0.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(-3.0,-3.0,3.0);
+  obj1.currentPos = glm::vec3(-3.0,-3.0,0.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(-3.0,3.0,3.0);
+  obj1.currentPos = glm::vec3(-3.0,3.0,0.0);
   scene1.objects.push_back(obj1);
 
 
-  scene1.camPosition = glm::vec3(10.0f,10.0f,-3.0f);
-  scene1.camPositionOffset = glm::vec3(0.0,0.0,0.0);
+  scene1.camPosition = glm::vec3(0.0f,0.0f,0.0f);
+  scene1.camPositionOffset = glm::vec3(0.0,0.0,-10.0);
 
   return 0;
 }
 
+void ChangeSomeStuff() {
+  scene1.objects[0].currentPos -= glm::vec3(-0.0000000001,-0.000001, 0.0);
+}
+
 void MySGLEngine::Render() {
-  RenderScene(scene1);
+  // RenderScene(scene1);
+
+  //std::thread t1(&MySGLEngine::RenderScene, this, scene1);
+  //t1.join();
+
+  std::cout << "Starting rendering thread..." << std::endl;
+  std::thread t1([&] { this->RenderScene(scene1); });
+
+  /* while (!glfwWindowShouldClose(window)) {
+    ChangeSomeStuff();
+  } */
+  
+  std::cout << "Waiting for rendering thread to finish..." << std::endl;
+
+  t1.join();
 }
 
 static void key_callback_user(GLFWwindow* window, int key, int scancode, int action, int mods) {

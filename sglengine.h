@@ -57,6 +57,8 @@ class SGLEngine {
       GLuint shader;
 
       glm::vec3 currentPos;
+
+      glm::vec3 scale;
     };
     
     struct Scene {
@@ -87,6 +89,8 @@ class SGLEngine {
     void Run(); // Main loop
 
     int ObjParser(std::string filepath, Object &out_object);
+
+    void PrintFPS();
     
   protected:
     GLFWwindow *window;
