@@ -106,10 +106,12 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
   }
   #endif
 
+  unsigned int vindex, nindex, uvindex;
   for(unsigned int i=0; i<tmp_indices_v.size(); i++) {
-    unsigned int vindex = tmp_indices_v[i];
-    unsigned int nindex = tmp_indices_n[i];
-    unsigned int uvindex = tmp_indices_uv[i];
+    vindex = tmp_indices_v[i];
+    nindex = tmp_indices_n[i];
+    if (usesUVs) 
+      uvindex = tmp_indices_uv[i];
 
     vertices.push_back( tmp_vertices[ (vindex - 1)*3 ] );
     vertices.push_back( tmp_vertices[ (vindex - 1)*3 + 1 ] );
@@ -120,8 +122,8 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
     normals.push_back( tmp_normals[ (nindex - 1)*3 + 2 ] );
    
     if (usesUVs) {
-      uvs.push_back( tmp_uvs[ (nindex - 1)*2 ] );
-      uvs.push_back( tmp_uvs[ (nindex - 1)*2 + 1 ] );
+      uvs.push_back( tmp_uvs[ (uvindex - 1)*2 ] );
+      uvs.push_back( tmp_uvs[ (uvindex - 1)*2 + 1 ] );
     }
   }
   
@@ -180,7 +182,6 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
       if (usesUVs) {
         out_object.uvs.push_back(uv[0]);
         out_object.uvs.push_back(uv[1]);
-        std::cout << uv[0] << " " << uv[1] << std::endl;
       }
 
       out_object.indices.push_back(index);
@@ -190,10 +191,6 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
 
   // Store the status of UVs
   out_object.usesUVs = usesUVs;
-
-  std::cout << out_object.vertices.size()/3 << std::endl;
-  if (usesUVs)
-    std::cout << out_object.uvs.size()/2 << std::endl;
 
   return 0;
 }

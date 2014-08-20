@@ -35,6 +35,9 @@
 #include <string>
 #include <vector>
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class SGLEngine {
   public:
@@ -53,11 +56,18 @@ class SGLEngine {
       GLuint indid;
       GLuint shader;
 
-      std::vector<GLfloat> currentPos[3];
+      glm::vec3 currentPos;
     };
     
     struct Scene {
       std::vector<Object> objects;
+
+      glm::vec3 camPosition;
+      glm::vec3 camPositionOffset;
+      glm::vec3 deltaCamPosition;
+
+      GLfloat camRotY;
+      GLfloat deltaCamRotY;
     };
 
     SGLEngine();
@@ -67,6 +77,8 @@ class SGLEngine {
     
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
+
+    void RenderScene(Scene &scene); // Render the whole scene
 
     void CheckStatus(GLuint obj);
     void AttachShader(GLuint program, GLenum type, const char* src);

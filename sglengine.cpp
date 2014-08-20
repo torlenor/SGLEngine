@@ -36,6 +36,10 @@
 
 #include "loadbmp.hpp"
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 SGLEngine::SGLEngine() {
 
 }
@@ -185,6 +189,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
 
   // TEXTURE //
   const char *imagepath="textures/cubetex1.bmp";
+  // const char *imagepath="textures/p51mustang.bmp";
   // const char *imagepath="textures/uvtemplate.bmp";
   GLuint texID;
   texID=loadBMP_custom(imagepath);
@@ -213,7 +218,66 @@ void SGLEngine::Run() {
 }
 
 void SGLEngine::Render() {
+  // has to be implemented in derived class
+}
 
+void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
+  std::cout << "Rendering..." << std::endl;
+  
+  glfwMakeContextCurrent(window);
+
+  static float time=-1;
+  static float delta=0.005;
+
+  while (!glfwWindowShouldClose(window)) {   
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    scene.camPositionOffset += scene.deltaCamPosition;
+    scene.camRotY += scene.deltaCamRotY;
+
+    glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 4.0f, 0.1f, 100.0f);
+
+    /* glm::mat4 View = glm::lookAt(
+         scene.camPosition, // Camera is at (4,3,3), in World Space
+         glm::vec3(0,0,0), // and looks at the origin
+         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+    ); */
+    glm::mat4 View = glm::rotate(glm::mat4(1.0f), (float)scene.camRotY, glm::vec3(0.0f, 1.0f, 0.0f));
+    View = glm::translate(View, scene.camPositionOffset);
+
+    for(int i=0; i<scene.objects.size(); i++) {
+      glm::mat4 Model = glm::translate(glm::mat4(1.0), scene.objects[i].currentPos);
+      Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
+      Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
+
+      glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+      glBindVertexArray(scene.objects[i].vaoid[0]);
+      glUseProgram(scene.objects[i].shader);
+    
+      GLuint MatrixID = glGetUniformLocation(scene.objects[i].shader, "MVP");
+      glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+      GLuint TextureID  = glGetUniformLocation(scene.objects[i].shader, "myTextureSampler");
+      glUniform1i(TextureID, 0); 
+
+      if (scene.objects[i].isIndexed) {
+        glDrawElements(GL_TRIANGLES, scene.objects[i].indices.size(), GL_UNSIGNED_INT, 0); 
+      } else {
+        glDrawArrays(GL_TRIANGLES, 0, scene.objects[i].vertices.size()/3); 
+      }   
+
+      GLenum glerr;
+      while ((glerr = glGetError()) != GL_NO_ERROR)
+        std::cerr << "OpenGL error: " << glerr << std::endl;
+    }   
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    
+    time += delta;
+    if (time > 1) { time = 0;} 
+  }   
 }
 
 void SGLEngine::CheckStatus( GLuint obj ) { 
