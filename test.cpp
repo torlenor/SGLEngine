@@ -52,6 +52,18 @@ void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
     obj.currentPos = glm::vec3(rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5)*10.0f;
     scene1.objects.push_back(obj);
   }
+  
+  if (key == GLFW_MOUSE_BUTTON_5 && action == GLFW_PRESS) {
+    for (int i=0; i<scene1.objects.size(); i++) {
+      scene1.objects[i].scale -= glm::vec3(0.1f, 0.1f, 0.1f);
+    }
+  }
+  
+  if (key == GLFW_MOUSE_BUTTON_6 && action == GLFW_PRESS) {
+    for (int i=0; i<scene1.objects.size(); i++) {
+      scene1.objects[i].scale += glm::vec3(0.1f, 0.1f, 0.1f);
+    }
+  }
 
   double xpos, ypos;
   glfwGetCursorPos(window, &xpos, &ypos);
@@ -88,12 +100,31 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     scene1.deltaCamRotY = -2.0*M_PI/(float)8.0;
   if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
+  
+  if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+    std::cout << "Pressed" << std::endl;
+    for (int i=0; i<scene1.objects.size(); i++) {
+      scene1.objects[i].scale += glm::vec3(0.05f, 0.05f, 0.05f);
+    }
+  }
+  
+  if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+    std::cout << "Pressed" << std::endl;
+    for (int i=0; i<scene1.objects.size(); i++) {
+      scene1.objects[i].scale -= glm::vec3(0.05f, 0.05f, 0.05f);
+      if(scene1.objects[i].scale.x < 0) scene1.objects[i].scale.x=0;
+      if(scene1.objects[i].scale.y < 0) scene1.objects[i].scale.y=0;
+      if(scene1.objects[i].scale.z < 0) scene1.objects[i].scale.z=0;
+    }
+  }
 }
 
 void MySGLEngine::UserInit() {
   glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, key_callback_user);
   glfwSetMouseButtonCallback(window, mouse_callback_user);
+
+  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 }
 
 int MySGLEngine::SetupScene() {
@@ -114,7 +145,7 @@ int MySGLEngine::SetupScene() {
   obj1.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, fragshaderfilename.c_str() );
 
 
-  obj1.scale = glm::vec3(0.2,0.2,0.2);
+  obj1.scale = glm::vec3(1.0,1.0,1.0);
 
   obj1.currentPos = glm::vec3(0.0,0.0,0.0);
   scene1.objects.push_back(obj1);
