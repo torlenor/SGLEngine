@@ -280,8 +280,8 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     glm::mat4 Projection = glm::perspective(45.0f, 4.0f/4.0f, 0.1f, 100.0f);
 
     glm::mat4 View = glm::lookAt(
-         scene.camPositionOffset, // Camera is at (4,3,3), in World Space
-         scene.camPositionOffset + glm::vec3(sin(scene.camRotY),0.0,cos(scene.camRotY)), // and looks at the origin
+         scene.camPositionOffset, // Camera in World Space
+         scene.camPositionOffset + glm::vec3(sin(scene.camRotY), 0.0, cos(scene.camRotY)), // and look at
          glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
