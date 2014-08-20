@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="cubetex1.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="202.42617"
+     inkscape:cy="642.26043"
+     inkscape:document-units="px"
+     inkscape:current-layer="g3160"
+     showgrid="false"
+     inkscape:snap-bbox="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:window-width="1123"
+     inkscape:window-height="681"
+     inkscape:window-x="307"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3025"
+       transform="translate(24.258916,97.97964)"
+       style="fill:#ff00ff;stroke:none"
+       inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+       inkscape:export-xdpi="76.377167"
+       inkscape:export-ydpi="76.377167">
+      <rect
+         y="212.36218"
+         x="8.5714283"
+         height="100"
+         width="100"
+         id="rect2985"
+         style="fill:#ff00ff;fill-rule:evenodd;stroke:none" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#00ffff;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987"
+         xml:space="preserve"><flowRegion
+           id="flowRegion2989"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#00ffff;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991" /></flowRegion><flowPara
+           style="font-size:56px;fill:#00ffff;stroke:none"
+           id="flowPara2993">1</flowPara></flowRoot>    </g>
+    <g
+       id="g3122"
+       transform="translate(-24.741082,12.26535)"
+       style="fill:#00ff00;stroke:none"
+       inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+       inkscape:export-xdpi="76.377167"
+       inkscape:export-ydpi="76.377167">
+      <rect
+         y="298.07648"
+         x="158.57143"
+         height="100"
+         width="100"
+         id="rect2985-9"
+         style="fill:#00ff00;fill-rule:evenodd;stroke:none" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987-1"
+         xml:space="preserve"
+         transform="translate(150,85.714288)"><flowRegion
+           id="flowRegion2989-7"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#ff0000;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991-6" /></flowRegion><flowPara
+           style="font-size:56px;fill:#ff0000;stroke:none"
+           id="flowPara2993-0">2</flowPara></flowRoot>    </g>
+    <g
+       id="g3129"
+       transform="translate(-291.88395,-178.73465)"
+       style="stroke:none"
+       inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+       inkscape:export-xdpi="76.377167"
+       inkscape:export-ydpi="76.377167">
+      <rect
+         y="388.07648"
+         x="425.71429"
+         height="100"
+         width="100"
+         id="rect2985-9-4"
+         style="fill:#800000;fill-rule:evenodd;stroke:none" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987-1-9"
+         xml:space="preserve"
+         transform="translate(417.14286,175.71428)"><flowRegion
+           id="flowRegion2989-7-3"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#0000ff;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991-6-3" /></flowRegion><flowPara
+           style="font-size:56px;fill:#0000ff;stroke:none"
+           id="flowPara2993-0-3">3</flowPara></flowRoot>    </g>
+    <g
+       id="g3136"
+       transform="translate(264.65487,-77.35611)"
+       style="stroke:none"
+       inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+       inkscape:export-xdpi="76.377167"
+       inkscape:export-ydpi="76.377167">
+      <rect
+         y="488.69794"
+         x="-130.82452"
+         height="100"
+         width="100"
+         id="rect2985-9-1"
+         style="fill:#0000ff;fill-rule:evenodd;stroke:none" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffff00;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987-1-2"
+         xml:space="preserve"
+         transform="translate(-139.39595,276.33575)"><flowRegion
+           id="flowRegion2989-7-1"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#ffff00;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991-6-2" /></flowRegion><flowPara
+           style="font-size:56px;fill:#ffff00;stroke:none"
+           id="flowPara2993-0-7">4</flowPara></flowRoot>    </g>
+    <g
+       id="g3160"
+       transform="translate(338.11607,262.55107)">
+      <rect
+         y="249.79076"
+         x="-204.28572"
+         height="100"
+         width="100"
+         id="rect2985-9-1-5"
+         style="fill:#ff0000;fill-rule:evenodd;stroke:none"
+         inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+         inkscape:export-xdpi="76.377167"
+         inkscape:export-ydpi="76.377167" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#008000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987-1-2-8"
+         xml:space="preserve"
+         transform="translate(-212.85714,37.428564)"
+         inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+         inkscape:export-xdpi="76.377167"
+         inkscape:export-ydpi="76.377167"><flowRegion
+           id="flowRegion2989-7-1-1"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#008000;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991-6-2-8" /></flowRegion><flowPara
+           style="font-size:56px;fill:#008000;stroke:none"
+           id="flowPara2993-0-7-9">5</flowPara></flowRoot>    </g>
+    <g
+       id="g3153"
+       transform="translate(547.68749,-104.8775)"
+       style="fill:#808000;stroke:none"
+       inkscape:export-filename="/home/hps/git/SGLEngine/textures/cubetex1.png"
+       inkscape:export-xdpi="76.377167"
+       inkscape:export-ydpi="76.377167">
+      <rect
+         y="415.21933"
+         x="-312.85715"
+         height="100"
+         width="100"
+         id="rect2985-9-1-9"
+         style="fill:#808000;fill-rule:evenodd;stroke:none" />
+      <flowRoot
+         style="font-size:40px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000080;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987-1-2-4"
+         xml:space="preserve"
+         transform="translate(-321.42857,202.85714)"><flowRegion
+           id="flowRegion2989-7-1-8"><rect
+             style="font-weight:bold;text-align:center;text-anchor:middle;fill:#000080;stroke:none;-inkscape-font-specification:Sans Bold"
+             y="229.08786"
+             x="23.233509"
+             height="65.659912"
+             width="70.205605"
+             id="rect2991-6-2-5" /></flowRegion><flowPara
+           style="font-size:56px;fill:#000080;stroke:none"
+           id="flowPara2993-0-7-0">6</flowPara></flowRoot>    </g>
+  </g>
+</svg>
