@@ -274,19 +274,25 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     glfwGetFramebufferSize(window, &width, &height);
     ratio = width/(float)height;
 
-    scene.camPositionOffset += scene.deltaCamPosition*(float)(deltaTime);
     scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
+    scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
+                          +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
+    scene.camPosition.z += -sin(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
+                          +cos(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
 
-    glm::mat4 Projection = glm::perspective(45.0f, 4.0f/4.0f, 0.1f, 100.0f);
+    if (scene.camRotY > 2.0*M_PI) scene.camRotY -= 2.0*M_PI;
+    if (scene.camRotY < 0) scene.camRotY += 2.0*M_PI;
+    std::cout << "Cam Angle = " << scene.camRotY / (2.0*M_PI) * 360 << " degree" << std::endl;
+
+    // FOVY is in radiand
+    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), 4.0f/4.0f, 0.1f, 100.0f);
 
     glm::mat4 View = glm::lookAt(
-         scene.camPositionOffset, // Camera in World Space
-         scene.camPositionOffset + glm::vec3(sin(scene.camRotY), 0.0, cos(scene.camRotY)), // and look at
-         glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+      scene.camPosition, // Camera in World Space
+      scene.camPosition + glm::vec3(sin(scene.camRotY), 0.0, cos(scene.camRotY)), // and look at
+      glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
-      
-    std::cout << scene.objects[0].currentVel.x << std::endl;
-
+    
     for(int i=0; i<scene.objects.size(); i++) {
       scene.objects[i].currentPos += scene.objects[i].currentVel*(float)deltaTime;
 

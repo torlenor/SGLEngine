@@ -92,12 +92,12 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-    scene1.deltaCamRotY = 2.0*M_PI/(float)8.0;
+    scene1.deltaCamRotY = 2.0*M_PI/(float)2.0;
   if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    scene1.deltaCamRotY = -2.0*M_PI/(float)8.0;
+    scene1.deltaCamRotY = -2.0*M_PI/(float)2.0;
   if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
@@ -143,36 +143,50 @@ int MySGLEngine::SetupScene() {
   obj1.isIndexed = true;
   SetupObject(obj1);
   obj1.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, fragshaderfilename.c_str() );
-
-
   obj1.scale = glm::vec3(1.0,1.0,1.0);
 
-  obj1.currentPos = glm::vec3(0.0,0.0,0.0);
+  // Wall in front of me
+  obj1.currentPos = glm::vec3(0.0, 0.0, 10.0);
   scene1.objects.push_back(obj1);
-
-  obj1.currentPos = glm::vec3(3.0,3.0,0.0);
+  obj1.currentPos = glm::vec3(5.0, 5.0, 10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(5.0, -5.0, 10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(-5.0, -5.0, 10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(-5.0, 5.0, 10.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(3.0,-3.0,0.0);
+  // Wall behind me
+  obj1.currentPos = glm::vec3(0.0, 0.0, -10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(5.0, 5.0, -10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(5.0, -5.0, -10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(-5.0, -5.0, -10.0);
+  scene1.objects.push_back(obj1);
+  obj1.currentPos = glm::vec3(-5.0, 5.0, -10.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(-3.0,-3.0,0.0);
+  // Sides
+  obj1.currentPos = glm::vec3(-10.0, 0.0, 0.0);
   scene1.objects.push_back(obj1);
   
-  obj1.currentPos = glm::vec3(-3.0,3.0,0.0);
+  // Sides
+  obj1.currentPos = glm::vec3(10.0, 0.0, 0.0);
   scene1.objects.push_back(obj1);
 
 
-  scene1.camPosition = glm::vec3(0.0f,0.0f,0.0f);
-  scene1.camPositionOffset = glm::vec3(0.0,0.0,-10.0);
+  scene1.camPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
   return 0;
 }
 
 void ChangeSomeStuff() {
   // std::cout << "ChangeSomeStuff() called!" << std::endl;
-  float cubesize=2.0f;
-  static glm::vec3 currentVel = glm::vec3(-1.4,+1.1, 0.0);
+  float cubesize = 2.0f;
+  static glm::vec3 currentVel = glm::vec3(-1.6, 1.4, 0.0);
   glm::vec3 currentPos = scene1.objects[0].currentPos;
   if (currentPos.x > cubesize) {
     currentVel.x *= -1.0;
