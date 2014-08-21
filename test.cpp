@@ -94,6 +94,15 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
   if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
+  if (key == GLFW_KEY_X && action == GLFW_PRESS)
+    scene1.deltaCamPosition.y = -10.0;
+  if (key == GLFW_KEY_X && action == GLFW_RELEASE)
+    scene1.deltaCamPosition.y = 0.0;
+  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    scene1.deltaCamPosition.y = 10.0;
+  if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
+    scene1.deltaCamPosition.y = 0.0;
+  
   if (key == GLFW_KEY_A && action == GLFW_PRESS)
     scene1.deltaCamRotY = 2.0*M_PI/(float)2.0;
   if (key == GLFW_KEY_A && action == GLFW_RELEASE)

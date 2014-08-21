@@ -308,6 +308,7 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
     scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
                           +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
+    scene.camPosition.y += scene.deltaCamPosition.y*(float)deltaTime;
     scene.camPosition.z += -sin(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
                           +cos(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
 
