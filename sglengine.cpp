@@ -89,9 +89,24 @@ int SGLEngine::Init() {
   glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
-  glEnable(GL_CULL_FACE);
+  
+  // glEnable(GL_CULL_FACE);
 
   return 0;
+}
+
+int SGLEngine::InfoObject(SGLEngine::Object &obj) {
+  std::cout << "Object Info:\n"
+    << "Number of vertices = " << obj.vertices.size()/3 << "\n" 
+    << "Number of colors = " << obj.colors.size()/3 << "\n" 
+    << "Number of normals = " << obj.normals.size()/3 << "\n" 
+    << "Number of UVs = " << obj.uvs.size()/2 << "\n" 
+    << "Number of indices = " << obj.indices.size() << "\n" 
+    << "VAOid = " << obj.vaoid[0] << "\n" 
+    << "Shader number = " << obj.shader << "\n" 
+    << "Current position = (" << obj.currentPos.x << "," << obj.currentPos.y << "," << obj.currentPos.z << ") \n" 
+    << "Current velocity = (" << obj.currentVel.x << "," << obj.currentVel.y << "," << obj.currentVel.z << ") \n" 
+    << "END Object info" << std::endl;
 }
 
 int SGLEngine::SetupObject(SGLEngine::Object &obj) {
@@ -109,6 +124,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
 
   glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0], GL_STATIC_DRAW);
+  // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0], GL_DYNAMIC_DRAW);
 
   // Indices //
   if (obj.isIndexed) {
@@ -249,6 +265,20 @@ void SGLEngine::PrintFPS() {
   }
 }
 
+void Explode(SGLEngine::Object &obj, const double deltaTime) {
+    float vertChange = 5.0*deltaTime;
+    int rnd1 = rand() % (obj.vertices.size());
+    if(rand()/(float)RAND_MAX < 0.5) {
+      obj.vertices[rnd1] += vertChange;
+    } else {
+      obj.vertices[rnd1] -= vertChange;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
   glfwMakeContextCurrent(window);
 
@@ -275,6 +305,7 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     ratio = width/(float)height;
 
     scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
+    scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
     scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
                           +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
     scene.camPosition.z += -sin(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
@@ -282,24 +313,28 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
 
     if (scene.camRotY > 2.0*M_PI) scene.camRotY -= 2.0*M_PI;
     if (scene.camRotY < 0) scene.camRotY += 2.0*M_PI;
-    std::cout << "Cam Angle = " << scene.camRotY / (2.0*M_PI) * 360 << " degree" << std::endl;
+    
+    if (scene.camRotZ > M_PI/2.0f) scene.camRotZ = M_PI/2.0f;
+    if (scene.camRotZ < -M_PI/2.0f) scene.camRotZ = -M_PI/2.0f;
 
-    // FOVY is in radiand
+    // std::cout << "Cam Pos = (" << scene.camPosition.x << "," <<  scene.camPosition.y << "," << scene.camPosition.z << ")" << " Cam Angle Y = " << scene.camRotY / (2.0*M_PI) * 360 << " degree" << " Cam Angle Z = " << scene.camRotZ / (2.0*M_PI) * 360 << " degree" << std::endl;
+
+    // FOVY is in radiant
     glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), 4.0f/4.0f, 0.1f, 100.0f);
 
     glm::mat4 View = glm::lookAt(
       scene.camPosition, // Camera in World Space
-      scene.camPosition + glm::vec3(sin(scene.camRotY), 0.0, cos(scene.camRotY)), // and look at
+      scene.camPosition + glm::vec3(sin(scene.camRotY), sin(scene.camRotZ), cos(scene.camRotY)), // and look at
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
-    
+
     for(int i=0; i<scene.objects.size(); i++) {
       scene.objects[i].currentPos += scene.objects[i].currentVel*(float)deltaTime;
 
       glm::mat4 Model = glm::translate(glm::mat4(1.0f), scene.objects[i].currentPos);
       Model = glm::scale(Model, scene.objects[i].scale);
-      Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
-      Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
+      // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
+      // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
 
       glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
@@ -322,6 +357,9 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       while ((glerr = glGetError()) != GL_NO_ERROR)
         std::cerr << "OpenGL error: " << glerr << std::endl;
     }
+  
+    // Try an update of the vertices
+    Explode(scene.objects[0], deltaTime);
 
     glfwSwapBuffers(window);
     glfwPollEvents();

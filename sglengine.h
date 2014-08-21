@@ -71,6 +71,9 @@ class SGLEngine {
 
       GLfloat camRotY;
       GLfloat deltaCamRotY;
+      
+      GLfloat camRotZ;
+      GLfloat deltaCamRotZ;
     };
 
     SGLEngine();
@@ -78,6 +81,8 @@ class SGLEngine {
 
     int Init(); // Inititializes OpenGL
     
+    int InfoObject(Object &obj); // Print infos about the Object obj
+
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
 
