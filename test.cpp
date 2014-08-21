@@ -170,21 +170,41 @@ int MySGLEngine::SetupScene() {
 }
 
 void ChangeSomeStuff() {
-  scene1.objects[0].currentPos -= glm::vec3(-0.0000000001,-0.000001, 0.0);
+  // std::cout << "ChangeSomeStuff() called!" << std::endl;
+  float cubesize=2.0f;
+  static glm::vec3 currentVel = glm::vec3(-1.4,+1.1, 0.0);
+  glm::vec3 currentPos = scene1.objects[0].currentPos;
+  if (currentPos.x > cubesize) {
+    currentVel.x *= -1.0;
+    currentPos.x = cubesize;
+  }
+  if (currentPos.x < -cubesize) {
+    currentVel.x *= -1.0;
+    currentPos.x = -cubesize;
+  }
+  if (currentPos.y > cubesize) {
+    currentVel.y *= -1.0;
+    currentPos.y = cubesize;
+  }
+  if (currentPos.y < -cubesize) {
+    currentVel.y *= -1.0;
+    currentPos.y = -cubesize;
+  }
+  scene1.objects[0].currentPos = currentPos;
+  scene1.objects[0].currentVel = currentVel;
 }
 
 void MySGLEngine::Render() {
-  // RenderScene(scene1);
-
-  //std::thread t1(&MySGLEngine::RenderScene, this, scene1);
-  //t1.join();
-
   std::cout << "Starting rendering thread..." << std::endl;
   std::thread t1([&] { this->RenderScene(scene1); });
 
-  /* while (!glfwWindowShouldClose(window)) {
+  struct timespec tim1;
+  tim1.tv_sec=0;
+  tim1.tv_nsec=50*(1000000);
+  while (!glfwWindowShouldClose(window)) {
     ChangeSomeStuff();
-  } */
+    nanosleep(&tim1, NULL);
+  }
   
   std::cout << "Waiting for rendering thread to finish..." << std::endl;
 

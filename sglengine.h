@@ -57,6 +57,7 @@ class SGLEngine {
       GLuint shader;
 
       glm::vec3 currentPos;
+      glm::vec3 currentVel; // current velocity in units/s
 
       glm::vec3 scale;
     };
