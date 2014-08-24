@@ -81,7 +81,7 @@ class SGLEngine {
 
     int Init(); // Inititializes OpenGL
     
-    int InfoObject(Object &obj); // Print infos about the Object obj
+    void InfoObject(Object &obj); // Print infos about the Object obj
 
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
@@ -103,6 +103,8 @@ class SGLEngine {
 
   private:
     virtual void Render(); // Has to be overloaded to be useful
+
+    void UpdateCamera(Scene &csene, const double deltaTime);
 
     inline bool ObjIsNear(float a, float b);
     bool ObjFindIndex(std::vector<float> &out_vertices, 

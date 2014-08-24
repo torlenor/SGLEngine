@@ -95,7 +95,7 @@ int SGLEngine::Init() {
   return 0;
 }
 
-int SGLEngine::InfoObject(SGLEngine::Object &obj) {
+void SGLEngine::InfoObject(SGLEngine::Object &obj) {
   std::cout << "Object Info:\n"
     << "Number of vertices = " << obj.vertices.size()/3 << "\n" 
     << "Number of colors = " << obj.colors.size()/3 << "\n" 
@@ -208,7 +208,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   const char *imagepath="textures/cubetex1.bmp";
   // const char *imagepath="textures/p51mustang.bmp";
   // const char *imagepath="textures/uvtemplate.bmp";
-  GLuint texID;
+  GLuint texID=0;
   texID=loadBMP_custom(imagepath);
 
   // TEXTURE END //
@@ -279,6 +279,22 @@ void Explode(SGLEngine::Object &obj, const double deltaTime) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void SGLEngine::UpdateCamera(SGLEngine::Scene &scene, const double deltaTime) {
+    scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
+    scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
+    scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
+                          +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
+    scene.camPosition.y += scene.deltaCamPosition.y*(float)deltaTime;
+    scene.camPosition.z += -sin(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
+                          +cos(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
+
+    if (scene.camRotY > 2.0*M_PI) scene.camRotY -= 2.0*M_PI;
+    if (scene.camRotY < 0) scene.camRotY += 2.0*M_PI;
+    
+    if (scene.camRotZ > M_PI/2.0f) scene.camRotZ = M_PI/2.0f;
+    if (scene.camRotZ < -M_PI/2.0f) scene.camRotZ = -M_PI/2.0f;
+}
+
 void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
   glfwMakeContextCurrent(window);
 
@@ -302,26 +318,14 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     float ratio;
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
     ratio = width/(float)height;
+    ratio = ratio;
 
-    scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
-    scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
-    scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
-                          +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
-    scene.camPosition.y += scene.deltaCamPosition.y*(float)deltaTime;
-    scene.camPosition.z += -sin(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
-                          +cos(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
-
-    if (scene.camRotY > 2.0*M_PI) scene.camRotY -= 2.0*M_PI;
-    if (scene.camRotY < 0) scene.camRotY += 2.0*M_PI;
-    
-    if (scene.camRotZ > M_PI/2.0f) scene.camRotZ = M_PI/2.0f;
-    if (scene.camRotZ < -M_PI/2.0f) scene.camRotZ = -M_PI/2.0f;
-
-    // std::cout << "Cam Pos = (" << scene.camPosition.x << "," <<  scene.camPosition.y << "," << scene.camPosition.z << ")" << " Cam Angle Y = " << scene.camRotY / (2.0*M_PI) * 360 << " degree" << " Cam Angle Z = " << scene.camRotZ / (2.0*M_PI) * 360 << " degree" << std::endl;
+    UpdateCamera(scene, deltaTime);
 
     // FOVY is in radiant
-    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), 4.0f/4.0f, 0.1f, 100.0f);
+    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), ratio, 0.1f, 100.0f);
 
     glm::mat4 View = glm::lookAt(
       scene.camPosition, // Camera in World Space
@@ -329,29 +333,30 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
-    for(int i=0; i<scene.objects.size(); i++) {
-      scene.objects[i].currentPos += scene.objects[i].currentVel*(float)deltaTime;
+    // for(int i=0; i<scene.objects.size(); i++) {
+    for(auto &obj : scene.objects) {
+      obj.currentPos += obj.currentVel*(float)deltaTime;
 
-      glm::mat4 Model = glm::translate(glm::mat4(1.0f), scene.objects[i].currentPos);
-      Model = glm::scale(Model, scene.objects[i].scale);
+      glm::mat4 Model = glm::translate(glm::mat4(1.0f), obj.currentPos);
+      Model = glm::scale(Model, obj.scale);
       // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
       // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
 
       glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
-      glBindVertexArray(scene.objects[i].vaoid[0]);
-      glUseProgram(scene.objects[i].shader);
+      glBindVertexArray(obj.vaoid[0]);
+      glUseProgram(obj.shader);
     
-      GLuint MatrixID = glGetUniformLocation(scene.objects[i].shader, "MVP");
+      GLuint MatrixID = glGetUniformLocation(obj.shader, "MVP");
       glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-      GLuint TextureID  = glGetUniformLocation(scene.objects[i].shader, "myTextureSampler");
+      GLuint TextureID  = glGetUniformLocation(obj.shader, "myTextureSampler");
       glUniform1i(TextureID, 0); 
 
-      if (scene.objects[i].isIndexed) {
-        glDrawElements(GL_TRIANGLES, scene.objects[i].indices.size(), GL_UNSIGNED_INT, 0); 
+      if (obj.isIndexed) {
+        glDrawElements(GL_TRIANGLES, obj.indices.size(), GL_UNSIGNED_INT, 0); 
       } else {
-        glDrawArrays(GL_TRIANGLES, 0, scene.objects[i].vertices.size()/3); 
+        glDrawArrays(GL_TRIANGLES, 0, obj.vertices.size()/3); 
       }   
 
       GLenum glerr;
@@ -360,7 +365,7 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     }
   
     // Try an update of the vertices
-    Explode(scene.objects[0], deltaTime);
+    // Explode(scene.objects[0], deltaTime);
 
     glfwSwapBuffers(window);
     glfwPollEvents();

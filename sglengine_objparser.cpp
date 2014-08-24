@@ -106,7 +106,7 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
   }
   #endif
 
-  unsigned int vindex, nindex, uvindex;
+  unsigned int vindex=0, nindex=0, uvindex=0;
   for(unsigned int i=0; i<tmp_indices_v.size(); i++) {
     vindex = tmp_indices_v[i];
     nindex = tmp_indices_n[i];

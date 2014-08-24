@@ -16,5 +16,6 @@ void main() {
   float cosTheta = clamp(dot(fragmentNormal, lightvec), 0, 1);
   vec3 LightColor = vec3(1.0, 1.0, 1.0);
 
-  fColor = MaterialAmbientColor + (fragmentColor)*LightColor*cosTheta;
+  // fColor = MaterialAmbientColor + (fragmentColor)*LightColor*cosTheta;
+  fColor = MaterialAmbientColor + (fragmentColor)*cosTheta;
 }

@@ -57,13 +57,13 @@ void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
   }
   
   if (key == GLFW_MOUSE_BUTTON_5 && action == GLFW_PRESS) {
-    for (int i=0; i<scene1.objects.size(); i++) {
+    for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale -= glm::vec3(0.1f, 0.1f, 0.1f);
     }
   }
   
   if (key == GLFW_MOUSE_BUTTON_6 && action == GLFW_PRESS) {
-    for (int i=0; i<scene1.objects.size(); i++) {
+    for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale += glm::vec3(0.1f, 0.1f, 0.1f);
     }
   }
@@ -124,13 +124,13 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     scene1.deltaCamRotZ = 0.0;
   
   if (key == 93 && action == GLFW_PRESS) {
-    for (int i=0; i<scene1.objects.size(); i++) {
+    for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale += glm::vec3(0.05f, 0.05f, 0.05f);
     }
   }
   
   if (key == 47 && action == GLFW_PRESS) {
-    for (int i=0; i<scene1.objects.size(); i++) {
+    for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale -= glm::vec3(0.05f, 0.05f, 0.05f);
       if(scene1.objects[i].scale.x < 0) scene1.objects[i].scale.x=0;
       if(scene1.objects[i].scale.y < 0) scene1.objects[i].scale.y=0;
@@ -145,6 +145,8 @@ void MySGLEngine::UserInit() {
   glfwSetMouseButtonCallback(window, mouse_callback_user);
 
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+  glfwSetWindowTitle(window, "My OpenGL Engine");
 }
 
 int MySGLEngine::SetupScene() {
@@ -156,7 +158,7 @@ int MySGLEngine::SetupScene() {
 
   glfwMakeContextCurrent(window);
 
-  for(int i=0; i<obj1.vertices.size(); i++) {
+  for(unsigned int i=0; i<obj1.vertices.size(); i++) {
     obj1.colors.push_back(rand()/(double)RAND_MAX);
   }
    
@@ -202,7 +204,7 @@ int MySGLEngine::SetupScene() {
   scene1.objects.push_back(obj1);
 
   // Give one cube a velocity
-  for (int i=0; i<scene1.objects.size()-1; i++) {
+  for (unsigned int i=0; i<scene1.objects.size()-1; i++) {
     scene1.objects[i].currentVel = 4.0f*glm::vec3(-1.6*(rand()/(float)RAND_MAX-0.5), 1.4*(rand()/(float)RAND_MAX-0.5), 0.0);
   }
   // scene1.objects[0].currentVel = glm::vec3(-1.6, 1.4, 0.0);
@@ -210,7 +212,7 @@ int MySGLEngine::SetupScene() {
   Object obj2;
   BuildWalls(obj2);
   obj2.isIndexed = true;
-  obj2.scale = glm::vec3(1.0,1.0,1.0);
+  obj2.scale = glm::vec3(20.0,20.0,20.0);
   SetupObject(obj2);
   obj2.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
   scene1.objects.push_back(obj2);
@@ -219,13 +221,34 @@ int MySGLEngine::SetupScene() {
 
   scene1.camPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
+  // Build a Wall
+  SGLEngine::Object obj_wall;
+
+  filepath = std::string("obj/walls.obj");
+  if (ObjParser(filepath, obj_wall) != 0)
+    std::cout << "Error loading object " << filepath << " !" << std::endl;
+  
+  obj_wall.isIndexed = true;
+  obj_wall.scale = glm::vec3(10.0, 10.0, 10.0);
+  obj_wall.colors.resize(obj_wall.vertices.size());
+  for(unsigned int i=0; i<obj_wall.colors.size(); i += 3)
+    obj_wall.colors[i] = 1.0;
+  obj_wall.currentPos = glm::vec3(0.0, 0.0, 0.0);
+  obj_wall.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
+  SetupObject(obj_wall);
+  // obj_wall.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
+  
+  InfoObject(obj_wall);
+
+  scene1.objects.push_back(obj_wall);
+
   return 0;
 }
 
 void ChangeSomeStuff() {
   // std::cout << "ChangeSomeStuff() called!" << std::endl;
   float cubesize = 20.0f;
-  for(int i=0; i<scene1.objects.size(); i++) {
+  for(unsigned int i=0; i<scene1.objects.size(); i++) {
     glm::vec3 currentPos = scene1.objects[i].currentPos;
     glm::vec3 currentVel = scene1.objects[i].currentVel;
     if (currentPos.x + 1.0> cubesize) {
