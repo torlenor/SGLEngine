@@ -1,0 +1,24 @@
+#version 330 core
+
+in vec2 UV;
+
+out vec3 fColor;
+
+in vec3 fragmentColor;
+in vec3 fragmentNormal;
+
+uniform sampler2D myTextureSampler;
+
+void main() {
+  // vec3 MaterialAmbientColor = vec3(0.5,0.5,0.5) * fragmentColor;
+  // vec3 MaterialAmbientColor = vec3(0.5,0.5,0.5)*(texture2D( myTextureSampler, UV ).rgb);
+  vec3 MaterialAmbientColor = vec3(0.5,0.5,0.5)*(texture( myTextureSampler, UV ).rgb);
+
+  vec3 lightvec = normalize(vec3(1.0, 1.0, 1.0));
+  float cosTheta = clamp(dot(fragmentNormal, lightvec), 0, 1);
+  vec3 LightColor = vec3(1.0, 1.0, 1.0);
+
+  // fColor = MaterialAmbientColor + texture2D( myTextureSampler, UV ).rgb*LightColor*cosTheta;
+  fColor = MaterialAmbientColor + texture( myTextureSampler, UV ).rgb*LightColor*cosTheta;
+  // fColor = MaterialAmbientColor + (fragmentColor)*LightColor*cosTheta;
+}
