@@ -43,6 +43,7 @@ class MySGLEngine : public SGLEngine {
 };
 
 MySGLEngine e;
+
 void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
   if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
     scene1.deltaCamPosition.z = 10.0;
@@ -137,6 +138,12 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
       if(scene1.objects[i].scale.z < 0) scene1.objects[i].scale.z=0;
     }
   }
+  
+  std::string scenefile("scene.data");
+  if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+    if ( LoadScene(scene1, scenefile) != 0) 
+      exit(1);
+  }
 }
 
 void MySGLEngine::UserInit() {
@@ -158,7 +165,7 @@ int MySGLEngine::SetupScene() {
 
   glfwMakeContextCurrent(window);
 
-  for(unsigned int i=0; i<obj1.vertices.size(); i++) {
+/*  for(unsigned int i=0; i<obj1.vertices.size(); i++) {
     obj1.colors.push_back(rand()/(double)RAND_MAX);
   }
    
@@ -244,6 +251,11 @@ int MySGLEngine::SetupScene() {
 
   for(auto &obj : scene1.objects) 
     scene1.objectsToRender.push_back(obj);
+  */
+
+  std::string scenefile("scene.data");
+  if ( LoadScene(scene1, scenefile) != 0) 
+    return 1;
 
   return 0;
 }
@@ -391,7 +403,8 @@ int main(int argc, char *argv[]) {
   e.UserInit();
 
   std::cout << "Setting up scene..." << std::endl;
-  e.SetupScene();
+  if (e.SetupScene() != 0)
+    return 1;
 
   std::cout << "Starting main loop..." << std::endl;
   e.Run();

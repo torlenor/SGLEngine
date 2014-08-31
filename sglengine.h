@@ -89,6 +89,8 @@ class SGLEngine {
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
 
+    int LoadScene(SGLEngine::Scene &scene, std::string filename);
+
     void RenderScene(Scene &scene); // Render the whole scene
 
     void CheckStatus(GLuint obj);

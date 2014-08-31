@@ -1,5 +1,16 @@
-#ifndef LOADBMP_HPP
-#define LOADBMP_HPP
+#include "loadbmp.h"
+
+#include <GL/glew.h>
+
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
+#include <GLFW/glfw3.h>
+
+#include <cstdio>
+#include <cstdlib>
 
 GLuint loadBMP_custom(const char * imagepath){
 
@@ -79,4 +90,3 @@ GLuint loadBMP_custom(const char * imagepath){
   // Return the ID of the texture we just created
   return textureID;
 }
-#endif // LOADBMP_HPP

@@ -34,7 +34,7 @@
 #endif
 #include <GLFW/glfw3.h>
 
-#include "loadbmp.hpp"
+#include "loadbmp.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -210,10 +210,10 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   // UVS END //
 
   // TEXTURE //
-  const char *imagepath="textures/cubetex1.bmp";
+  // const char *imagepath="textures/cubetex1.bmp";
   // const char *imagepath="textures/p51mustang.bmp";
   // const char *imagepath="textures/uvtemplate.bmp";
-  obj.textureid=loadBMP_custom(imagepath);
+  // obj.textureid=loadBMP_custom(imagepath);
 
   // TEXTURE END //
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-CPPFILES="sglengine.cpp sglengine_objparser.cpp test.cpp"
+CPPFILES="sglengine.cpp sglengine_objparser.cpp sglengine_loadscene.cpp loadbmp.cpp test.cpp"
 if [ `uname` == "Linux" ] ; then
   g++ -o test.x $CPPFILES -lGLEW -lglfw3  -std=c++11 -lXxf86vm -lpthread -lXi -lXrandr -lGL -lX11 -Wall
 else 
