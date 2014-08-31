@@ -208,8 +208,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   const char *imagepath="textures/cubetex1.bmp";
   // const char *imagepath="textures/p51mustang.bmp";
   // const char *imagepath="textures/uvtemplate.bmp";
-  GLuint texID=0;
-  texID=loadBMP_custom(imagepath);
+  obj.textureid=loadBMP_custom(imagepath);
 
   // TEXTURE END //
 
@@ -333,7 +332,6 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
-    // for(int i=0; i<scene.objects.size(); i++) {
     for(auto &obj : scene.objects) {
       obj.currentPos += obj.currentVel*(float)deltaTime;
 

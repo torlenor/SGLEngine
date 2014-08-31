@@ -242,6 +242,9 @@ int MySGLEngine::SetupScene() {
 
   scene1.objects.push_back(obj_wall);
 
+  for(auto &obj : scene1.objects) 
+    scene1.objectsToRender.push_back(obj);
+
   return 0;
 }
 

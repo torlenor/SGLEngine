@@ -32,6 +32,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -55,6 +56,7 @@ class SGLEngine {
       std::vector<GLuint> bufferid;
       GLuint indid;
       GLuint shader;
+      GLuint textureid;
 
       glm::vec3 currentPos;
       glm::vec3 currentVel; // current velocity in units/s
@@ -64,6 +66,7 @@ class SGLEngine {
     
     struct Scene {
       std::vector<Object> objects;
+      std::list<Object> objectsToRender;
 
       glm::vec3 camPosition;
       glm::vec3 camPositionOffset;
