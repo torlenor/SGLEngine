@@ -341,7 +341,7 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     UpdateCamera(scene, deltaTime);
 
     // FOVY is in radiant
-    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), ratio, 0.1f, 100.0f);
+    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), ratio, 0.1f, 200.0f);
 
     glm::mat4 View = glm::lookAt(
       scene.camPosition, // Camera in World Space

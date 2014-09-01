@@ -76,31 +76,31 @@ void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
 
 void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = 10.0;
+    scene1.deltaCamPosition.z = 15.0;
   if (key == GLFW_KEY_W && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
   if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = -10.0;
+    scene1.deltaCamPosition.z = -15.0;
   if (key == GLFW_KEY_S && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
   if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = 10.0;
+    scene1.deltaCamPosition.x = 15.0;
   if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = -10.0;
+    scene1.deltaCamPosition.x = -15.0;
   if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    scene1.deltaCamPosition.y = -10.0;
+    scene1.deltaCamPosition.y = -15.0;
   if (key == GLFW_KEY_X && action == GLFW_RELEASE)
     scene1.deltaCamPosition.y = 0.0;
   if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    scene1.deltaCamPosition.y = 10.0;
+    scene1.deltaCamPosition.y = 15.0;
   if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
     scene1.deltaCamPosition.y = 0.0;
   
@@ -210,7 +210,7 @@ void MySGLEngine::Render() {
   tim1.tv_sec=0;
   tim1.tv_nsec=100*(1000000);
   while (!glfwWindowShouldClose(window)) {
-    ChangeSomeStuff();
+    // ChangeSomeStuff();
     nanosleep(&tim1, NULL);
   }
   
