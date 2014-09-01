@@ -22,7 +22,7 @@
 
 #include "sglengine.h"
 
-std::string vertshaderfilename, fragshaderfilename, objectfilename;
+std::string scenefilename;
 
 SGLEngine::Scene scene1;
 
@@ -157,104 +157,11 @@ void MySGLEngine::UserInit() {
 }
 
 int MySGLEngine::SetupScene() {
-  SGLEngine::Object obj1;
-
-  std::string filepath(objectfilename);
-  if (ObjParser(filepath, obj1) != 0)
-    std::cout << "Error loading object " << filepath << " !" << std::endl;
 
   glfwMakeContextCurrent(window);
 
-/*  for(unsigned int i=0; i<obj1.vertices.size(); i++) {
-    obj1.colors.push_back(rand()/(double)RAND_MAX);
-  }
-   
-  obj1.isIndexed = true;
-  SetupObject(obj1);
-  obj1.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, fragshaderfilename.c_str() );
-  obj1.scale = glm::vec3(1.0,1.0,1.0);
-
-  // Wall in front of me
-  obj1.currentPos = glm::vec3(0.0, 0.0, 10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(5.0, 5.0, 10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(5.0, -5.0, 10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(-5.0, -5.0, 10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(-5.0, 5.0, 10.0);
-  scene1.objects.push_back(obj1);
-  
-  // Wall behind me
-  obj1.currentPos = glm::vec3(0.0, 0.0, -10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(5.0, 5.0, -10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(5.0, -5.0, -10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(-5.0, -5.0, -10.0);
-  scene1.objects.push_back(obj1);
-  obj1.currentPos = glm::vec3(-5.0, 5.0, -10.0);
-  scene1.objects.push_back(obj1);
-  
-  // Sides
-  obj1.currentPos = glm::vec3(-10.0, 0.0, 0.0);
-  scene1.objects.push_back(obj1);
-  
-  // Sides
-  obj1.currentPos = glm::vec3(10.0, 0.0, 0.0);
-  scene1.objects.push_back(obj1);
-  
-  // Top
-  obj1.currentPos = glm::vec3(0.0, 10.0, 0.0);
-  scene1.objects.push_back(obj1);
-
-  // Give one cube a velocity
-  for (unsigned int i=0; i<scene1.objects.size()-1; i++) {
-    scene1.objects[i].currentVel = 4.0f*glm::vec3(-1.6*(rand()/(float)RAND_MAX-0.5), 1.4*(rand()/(float)RAND_MAX-0.5), 0.0);
-  }
-  // scene1.objects[0].currentVel = glm::vec3(-1.6, 1.4, 0.0);
-  
-  Object obj2;
-  BuildWalls(obj2);
-  obj2.isIndexed = true;
-  obj2.scale = glm::vec3(20.0,20.0,20.0);
-  SetupObject(obj2);
-  obj2.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
-  scene1.objects.push_back(obj2);
-  
-  InfoObject(obj2);
-
-  scene1.camPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-
-  // Build a Wall
-  SGLEngine::Object obj_wall;
-
-  filepath = std::string("obj/walls.obj");
-  if (ObjParser(filepath, obj_wall) != 0)
-    std::cout << "Error loading object " << filepath << " !" << std::endl;
-  
-  obj_wall.isIndexed = true;
-  obj_wall.scale = glm::vec3(10.0, 10.0, 10.0);
-  obj_wall.colors.resize(obj_wall.vertices.size());
-  for(unsigned int i=0; i<obj_wall.colors.size(); i += 3)
-    obj_wall.colors[i] = 1.0;
-  obj_wall.currentPos = glm::vec3(0.0, 0.0, 0.0);
-  obj_wall.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
-  SetupObject(obj_wall);
-  // obj_wall.shader = SGLEngine::LoadShaders( vertshaderfilename.c_str(), NULL, "shaders/simple_color.fs" );
-  
-  InfoObject(obj_wall);
-
-  scene1.objects.push_back(obj_wall);
-
-  for(auto &obj : scene1.objects) 
-    scene1.objectsToRender.push_back(obj);
-  */
-
-  std::string scenefile("scene.data");
-  if ( LoadScene(scene1, scenefile) != 0) 
+  // std::string scenefile("scene.data");
+  if ( LoadScene(scene1, scenefilename) != 0) 
     return 1;
 
   return 0;
@@ -291,10 +198,6 @@ void ChangeSomeStuff() {
       scene1.objects[i].currentVel = currentVel;
     }
   }
-
-/*  SGLEngine::Object obj = scene1.objects[1];
-  obj.currentPos = glm::vec3(2.0*rand()/(float)RAND_MAX - 1.0, 2.0*rand()/(float)RAND_MAX - 1.0, 2.0*rand()/(float)RAND_MAX - 1.0)*10.0f;
-  scene1.objects.push_back(obj); */
 }
 
 void MySGLEngine::Render() {
@@ -306,7 +209,6 @@ void MySGLEngine::Render() {
   struct timespec tim1;
   tim1.tv_sec=0;
   tim1.tv_nsec=100*(1000000);
-  // tim1.tv_nsec=0;
   while (!glfwWindowShouldClose(window)) {
     ChangeSomeStuff();
     nanosleep(&tim1, NULL);
@@ -390,14 +292,12 @@ void BuildWalls(SGLEngine::Object &obj) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 4) {
-    std::cout << "./test.x object vertexshader fragmentshader" << std::endl;
+  if (argc < 2) {
+    std::cout << "./test.x object" << std::endl;
     exit(1);
   }
 
-  objectfilename = argv[1];
-  vertshaderfilename = argv[2];
-  fragshaderfilename = argv[3];
+  scenefilename = argv[1];
 
   e.Init();
   e.UserInit();

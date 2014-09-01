@@ -57,9 +57,11 @@ class SGLEngine {
       GLuint indid;
       GLuint shader;
       GLuint textureid;
+      GLuint colorid;
 
-      glm::vec3 currentPos;
-      glm::vec3 currentVel; // current velocity in units/s
+      glm::vec3 currentPos; // Current position
+      glm::vec3 currentVel; // Current velocity in units/s
+      glm::vec3 currentRot; // Rotation in (yaw, pitch, roll)
 
       glm::vec3 scale;
     };
@@ -87,6 +89,7 @@ class SGLEngine {
     void InfoObject(Object &obj); // Print infos about the Object obj
 
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
+    int UpdateObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int SetupScene(); // Build the scene prior to rendering
 
     int LoadScene(SGLEngine::Scene &scene, std::string filename);

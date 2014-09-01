@@ -39,6 +39,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 SGLEngine::SGLEngine() {
 
@@ -102,15 +103,15 @@ int SGLEngine::Init() {
 
 void SGLEngine::InfoObject(SGLEngine::Object &obj) {
   std::cout << "Object Info:\n"
-    << "Number of vertices = " << obj.vertices.size()/3 << "\n" 
-    << "Number of colors = " << obj.colors.size()/3 << "\n" 
-    << "Number of normals = " << obj.normals.size()/3 << "\n" 
-    << "Number of UVs = " << obj.uvs.size()/2 << "\n" 
-    << "Number of indices = " << obj.indices.size() << "\n" 
-    << "VAOid = " << obj.vaoid[0] << "\n" 
-    << "Shader number = " << obj.shader << "\n" 
-    << "Current position = (" << obj.currentPos.x << "," << obj.currentPos.y << "," << obj.currentPos.z << ") \n" 
-    << "Current velocity = (" << obj.currentVel.x << "," << obj.currentVel.y << "," << obj.currentVel.z << ") \n" 
+    << "\tNumber of vertices = " << obj.vertices.size()/3 << "\n" 
+    << "\tNumber of colors = " << obj.colors.size()/3 << "\n" 
+    << "\tNumber of normals = " << obj.normals.size()/3 << "\n" 
+    << "\tNumber of UVs = " << obj.uvs.size()/2 << "\n" 
+    << "\tNumber of indices = " << obj.indices.size() << "\n" 
+    << "\tVAOid = " << obj.vaoid[0] << "\n" 
+    << "\tShader number = " << obj.shader << "\n" 
+    << "\tCurrent position = (" << obj.currentPos.x << "," << obj.currentPos.y << "," << obj.currentPos.z << ") \n" 
+    << "\tCurrent velocity = (" << obj.currentVel.x << "," << obj.currentVel.y << "," << obj.currentVel.z << ") \n" 
     << "END Object info" << std::endl;
 }
 
@@ -124,23 +125,12 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   glBindVertexArray(obj.vaoid[0]);
   
   std::cout << "Copy buffers..." << std::endl;
+  // Vertices //
   obj.bufferid.resize(1);
   glGenBuffers(1, &obj.bufferid[0]);
-
   glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0], GL_STATIC_DRAW);
-  // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0], GL_DYNAMIC_DRAW);
 
-  // Indices //
-  if (obj.isIndexed) {
-    glGenBuffers(1, &obj.indid);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.indid);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size() * sizeof(GLuint),
-        &obj.indices[0], GL_STATIC_DRAW);
-  }
-  // INDICES END //
-  
-  // Vertices //
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.indid);
   glVertexAttribPointer(
@@ -153,14 +143,22 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   );
   // Vertices END //
 
+  // Indices //
+  if (obj.isIndexed) {
+    glGenBuffers(1, &obj.indid);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.indid);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size() * sizeof(GLuint),
+        &obj.indices[0], GL_STATIC_DRAW);
+  }
+  // INDICES END //
+  
   // COLOR //
-  GLuint colorbuffer;
-  glGenBuffers(1, &colorbuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glGenBuffers(1, &obj.colorid);
+  glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.colors.size(), &obj.colors[0], GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
   glVertexAttribPointer(
       1,        // attribute. No particular reason for 1, but must match the layout in the shader.
       3,        // size
@@ -224,6 +222,20 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   glDisableVertexAttribArray(3);
   glBindBuffer(GL_ARRAY_BUFFER, 0); 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); 
+
+  return 0;
+}
+
+int SGLEngine::UpdateObject(SGLEngine::Object &obj) {
+  std::cout << "Updating object..." << std::endl;
+
+  glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, 0); 
+  
+  glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*obj.colors.size(), &obj.colors[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
   return 0;
 }
@@ -340,12 +352,17 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     for(auto &obj : scene.objects) {
       obj.currentPos += obj.currentVel*(float)deltaTime;
 
+      float yaw = (float)(obj.currentRot.x/360.0f*2.0f*M_PI);
+      float pitch = (float)(obj.currentRot.y/360.0f*2.0f*M_PI);
+      float roll = (float)(obj.currentRot.z/360.0f*2.0f*M_PI);
+      glm::mat4 eulerRot = glm::eulerAngleYXZ(yaw, pitch, roll);
       glm::mat4 Model = glm::translate(glm::mat4(1.0f), obj.currentPos);
       Model = glm::scale(Model, obj.scale);
+      // eulerAngleYXZ (valType const &yaw, valType const &pitch, valType const &roll)
       // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
       // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
 
-      glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+      glm::mat4 MVP = Projection * View * Model * eulerRot; // Remember, matrix multiplication is the other way around
 
       glBindVertexArray(obj.vaoid[0]);
       glUseProgram(obj.shader);
