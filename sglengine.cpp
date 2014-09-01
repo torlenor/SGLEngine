@@ -75,7 +75,9 @@ int SGLEngine::Init() {
 #endif
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-  window = glfwCreateWindow(800, 800, "Simple example", NULL, NULL);
+  glfwWindowHint(GLFW_SAMPLES,4);
+
+  window = glfwCreateWindow(1024, 800, "Simple example", NULL, NULL);
   if (!window) {
       glfwTerminate();
       exit(EXIT_FAILURE);
@@ -329,6 +331,7 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     time += delta*(deltaTime);
     if (time > 1) { time = 0; } 
 
+    glClearColor(0.0f, 0.2f, 0.2f , 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     float ratio;
@@ -384,9 +387,6 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
         std::cerr << "OpenGL error: " << glerr << std::endl;
     }
   
-    // Try an update of the vertices
-    // Explode(scene.objects[0], deltaTime);
-
     glfwSwapBuffers(window);
     glfwPollEvents();
 

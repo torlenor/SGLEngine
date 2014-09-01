@@ -139,9 +139,8 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     }
   }
   
-  std::string scenefile("scene.data");
   if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-    if ( LoadScene(scene1, scenefile) != 0) 
+    if ( LoadScene(scene1, scenefilename) != 0) 
       exit(1);
   }
 }
@@ -164,40 +163,73 @@ int MySGLEngine::SetupScene() {
   if ( LoadScene(scene1, scenefilename) != 0) 
     return 1;
 
+  scene1.camPosition.x = -30;
+  scene1.camPosition.y = 30;
+  scene1.camPosition.z = -40;
+  scene1.camRotY = 0.969715;
+
+  scene1.objects.back().currentVel = glm::vec3(0.0,0.0,10.0);
+
   return 0;
+}
+
+void Colission() {
+  glm::vec3 currentVel = glm::vec3(0.0f,0.0f,0.0f);
+  static bool colHappened=false;
+  if ( std::abs(scene1.objects.back().currentPos.z + 11.0) < 1.0 && !colHappened) {
+    colHappened = true;
+    for (int i=0; i<(int)scene1.objects.size()-1; i++) {
+      if (std::abs(scene1.objects[i].currentPos.x-58.0f/2.0f) < 14.0 && std::abs(scene1.objects[i].currentPos.y - 58.0f/2.0f) < 12.0) {
+        currentVel = glm::vec3(4.0*rand()/(float)RAND_MAX-2.0, 4.0*rand()/(float)RAND_MAX - 2.0, scene1.objects.back().currentVel.z - 2.0*rand()/(float)RAND_MAX);
+        scene1.objects[i].currentVel = currentVel;
+      }
+    }
+    scene1.objects.back().currentVel *= 0.2;
+  }
 }
 
 void ChangeSomeStuff() {
   // std::cout << "ChangeSomeStuff() called!" << std::endl;
-  float cubesize = 20.0f;
-  for(unsigned int i=0; i<scene1.objects.size(); i++) {
-    glm::vec3 currentPos = scene1.objects[i].currentPos;
-    glm::vec3 currentVel = scene1.objects[i].currentVel;
-    if (currentPos.x + 1.0> cubesize) {
+  float cubesize = 58.0f;
+  SGLEngine::Object &obj = scene1.objects.back();
+    glm::vec3 currentPos = obj.currentPos;
+    glm::vec3 currentVel = obj.currentVel;
+    if (currentPos.x > cubesize) {
       currentVel.x *= -1.0;
-      currentPos.x = cubesize - 1.0;
-      scene1.objects[i].currentPos = currentPos;
-      scene1.objects[i].currentVel = currentVel;
+      currentPos.x = cubesize;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
     }
-    if (currentPos.x - 1.0 < -cubesize) {
+    if (currentPos.x < 0) {
       currentVel.x *= -1.0;
-      currentPos.x = -cubesize + 1.0;
-      scene1.objects[i].currentPos = currentPos;
-      scene1.objects[i].currentVel = currentVel;
+      currentPos.x = 0.0;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
     }
-    if (currentPos.y + 1.0 > cubesize) {
+    if (currentPos.y > cubesize) {
       currentVel.y *= -1.0;
-      currentPos.y = cubesize - 1.0;
-      scene1.objects[i].currentPos = currentPos;
-      scene1.objects[i].currentVel = currentVel;
+      currentPos.y = cubesize;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
     }
-    if (currentPos.y - 1.0 < -cubesize) {
+    if (currentPos.y < -0) {
       currentVel.y *= -1.0;
-      currentPos.y = -cubesize + 1.0;
-      scene1.objects[i].currentPos = currentPos;
-      scene1.objects[i].currentVel = currentVel;
+      currentPos.y = 0.0;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
     }
-  }
+    if (currentPos.z < -cubesize) {
+      currentVel.z *= -1.0;
+      currentPos.z = -cubesize;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
+    }
+    if (currentPos.z + 2.0 > 0) {
+      currentVel.z *= -1.0;
+      currentPos.z = -2.0;
+      obj.currentPos = currentPos;
+      obj.currentVel = currentVel;
+    }
 }
 
 void MySGLEngine::Render() {
@@ -211,6 +243,7 @@ void MySGLEngine::Render() {
   tim1.tv_nsec=100*(1000000);
   while (!glfwWindowShouldClose(window)) {
     // ChangeSomeStuff();
+    Colission();
     nanosleep(&tim1, NULL);
   }
   
@@ -231,7 +264,7 @@ static void mouse_callback_user(GLFWwindow* window, int button, int action, int 
 }  
 
 void BuildWalls(SGLEngine::Object &obj) {
-  float size=20.0f; // in every direction from 0,0,0
+  float size=58.0f; // in every direction from 0,0,0
 
   std::vector<float> vertices, colors, normals;
   std::vector<GLuint> indices;

@@ -14,7 +14,11 @@ int main(int argc, char *argv[]) {
   float xdelta=2, ydelta=2;
   float xScale=1.0, yScale=1.0, zScale=1.0;
   int white=0;
-  cout << "o obj/cube_uv.obj 1.0 1.0 1.0\no obj/cube_uv.obj 0.0 0.0 0.0\no obj/cube_uv.obj 1.0 0.0 0.0\nt textures/cubetex1.bmp\ns shaders/simple.vs shaders/simple_color.fs" << endl;
+  cout << "o obj/cube_uv.obj 1.0 1.0 1.0" << std::endl
+       << "o obj/cube_uv.obj 0.0 0.0 0.0" << std::endl
+       << "o obj/cube_uv.obj 1.0 0.0 0.0" << std::endl
+       << "o obj/VW-new-beetle.obj 0.0 1.0 0.0" << std::endl
+       << "t textures/cubetex1.bmp\ns shaders/simple.vs shaders/simple_color.fs" << endl;
   for (int nx=0; nx<Nx; nx++) {
     for (int ny=0; ny<Ny; ny++) {
       if ( (nx + ny) % 2 == 0) {
@@ -62,6 +66,12 @@ int main(int argc, char *argv[]) {
     << xScale << " " << yScale << " " << zScale << " "
     << "0.0 0.0 0.0" << endl;
   cout << "sc " << "2" << " 0 0 " << Nx*xdelta-0.5 << " " << Ny*ydelta-0.5 << " " << 0 << " "
+    << xScale << " " << yScale << " " << zScale << " "
+    << "0.0 0.0 0.0" << endl;
+
+  // Add an additional cube
+  xScale=1.0; yScale=1.0; zScale=1.0;
+  cout << "sc " << "3" << " 0 0 " << Nx/(float)2.0*xdelta << " " << Ny/(float)2.0*ydelta-5.5 << " " << -120 << " "
     << xScale << " " << yScale << " " << zScale << " "
     << "0.0 0.0 0.0" << endl;
 
