@@ -42,28 +42,54 @@
 
 class SGLEngine {
   public:
-    struct Object {
-      std::vector<GLfloat> vertices;
-      std::vector<GLfloat> normals;
-      std::vector<GLfloat> colors;
-      std::vector<GLfloat> uvs;
-      std::vector<GLuint> indices;
+    class ObjectData {
+      public:
+        std::vector<GLfloat> vertices;
+        std::vector<GLfloat> normals;
+        std::vector<GLfloat> colors;
+        std::vector<GLfloat> uvs;
+        std::vector<GLuint> indices;
+        
+        bool isIndexed;
+        bool usesUVs;
+    };
+    
+    class Physics {
+      public:
+        Physics() {
+          boundingBox.resize(6);
+        }
 
-      bool isIndexed;
-      bool usesUVs;
+        bool physGrav;
+        float gravG;
+        float gravMass;
 
-      std::vector<GLuint> vaoid;
-      std::vector<GLuint> bufferid;
-      GLuint indid;
-      GLuint shader;
-      GLuint textureid;
-      GLuint colorid;
+        bool collDetect;
+        std::vector<float> boundingBox; // +x,-x,+y,-y,+z,-z direction
 
-      glm::vec3 currentPos; // Current position
-      glm::vec3 currentVel; // Current velocity in units/s
-      glm::vec3 currentRot; // Rotation in (yaw, pitch, roll)
+        void DoPhys(float dt) {
+          if (physGrav) Gravity(dt);
+        };
+        
+        glm::vec3 currentVel; // Current velocity in units/s
 
-      glm::vec3 scale;
+      private:
+        void Gravity(float dt); // this will change currentVel;
+    };
+
+    class Object : public Physics, public ObjectData {
+      public:
+        std::vector<GLuint> vaoid;
+        std::vector<GLuint> bufferid;
+        GLuint indid;
+        GLuint shader;
+        GLuint textureid;
+        GLuint colorid;
+
+        glm::vec3 currentPos; // Current position
+        glm::vec3 currentRot; // Rotation in (yaw, pitch, roll)
+
+        glm::vec3 scale;
     };
     
     struct Scene {
@@ -103,6 +129,8 @@ class SGLEngine {
     void Run(); // Main loop
 
     int ObjParser(std::string filepath, Object &out_object);
+        
+    void CheckCollision(Scene &scene);
 
     void PrintFPS();
     

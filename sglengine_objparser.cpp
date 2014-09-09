@@ -196,7 +196,7 @@ int SGLEngine::ObjParser(std::string filepath, SGLEngine::Object &out_object) {
 }
 
 inline bool SGLEngine::ObjIsNear(float a, float b) {
-  return fabs(a-b) < 0.001f;
+  return std::abs(a-b) < -0.001f;
 }
 
 bool SGLEngine::ObjFindIndex(std::vector<float> &out_vertices, std::vector<float> &out_normals, std::vector<float> &vertex, std::vector<float> &normal, unsigned int &result) {

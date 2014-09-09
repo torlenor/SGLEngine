@@ -41,6 +41,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
+void getGLError(std::string filename, int line) {
+  GLenum glerr;
+  while ((glerr = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "WARNING: In " << filename << " at line " << line << "\n" 
+      << "OpenGL error: " << glerr << std::endl;
+  }
+}
+
 SGLEngine::SGLEngine() {
 
 }
@@ -84,12 +92,15 @@ int SGLEngine::Init() {
   }
 
   glfwMakeContextCurrent(window);
+  getGLError(__FILE__, __LINE__);
   
   glfwSetKeyCallback(window, key_callback);
+  getGLError(__FILE__, __LINE__);
 
   glewExperimental = GL_TRUE;
   if( GLEW_OK != glewInit() )
     exit(EXIT_FAILURE);
+  getGLError(__FILE__, __LINE__);
 
   fputs("Window Created\n", stdout);
 
@@ -97,6 +108,7 @@ int SGLEngine::Init() {
   glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
+  getGLError(__FILE__, __LINE__);
   
   // glEnable(GL_CULL_FACE);
 
@@ -114,17 +126,29 @@ void SGLEngine::InfoObject(SGLEngine::Object &obj) {
     << "\tShader number = " << obj.shader << "\n" 
     << "\tCurrent position = (" << obj.currentPos.x << "," << obj.currentPos.y << "," << obj.currentPos.z << ") \n" 
     << "\tCurrent velocity = (" << obj.currentVel.x << "," << obj.currentVel.y << "," << obj.currentVel.z << ") \n" 
+    << "\tBounding Box:\n"
+    << "\t\t +x= " << obj.boundingBox.at(0) << "\n"
+    << "\t\t -x= " << obj.boundingBox.at(1) << "\n"
+    << "\t\t +y= " << obj.boundingBox.at(2) << "\n"
+    << "\t\t -y= " << obj.boundingBox.at(3) << "\n"
+    << "\t\t +z= " << obj.boundingBox.at(4) << "\n"
+    << "\t\t -z= " << obj.boundingBox.at(5) << "\n"
     << "END Object info" << std::endl;
 }
 
 int SGLEngine::SetupObject(SGLEngine::Object &obj) {
-  glGetError();
+  getGLError(__FILE__, __LINE__);
+
+  // Use the shader
+  //glUseProgram(obj.shader);
+  //getGLError(__FILE__, __LINE__);
 
   std::cout << "Generating VAOs..." << std::endl;
   obj.vaoid.resize(1);
 
   glGenVertexArrays(1, &obj.vaoid[0]);
   glBindVertexArray(obj.vaoid[0]);
+  getGLError(__FILE__, __LINE__);
   
   std::cout << "Copy buffers..." << std::endl;
   // Vertices //
@@ -132,9 +156,10 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   glGenBuffers(1, &obj.bufferid[0]);
   glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0], GL_STATIC_DRAW);
+  getGLError(__FILE__, __LINE__);
 
   glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.indid);
+  getGLError(__FILE__, __LINE__);
   glVertexAttribPointer(
       0,        // attribute. No particular reason for 1, but must match the layout in the shader.
       3,        // size
@@ -143,6 +168,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
       0,        // stride
       (void*)0  // array buffer offset
   );
+  getGLError(__FILE__, __LINE__);
   // Vertices END //
 
   // Indices //
@@ -152,23 +178,27 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, obj.indices.size() * sizeof(GLuint),
         &obj.indices[0], GL_STATIC_DRAW);
   }
+  getGLError(__FILE__, __LINE__);
   // INDICES END //
   
   // COLOR //
-  glGenBuffers(1, &obj.colorid);
-  glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.colors.size(), &obj.colors[0], GL_STATIC_DRAW);
+  if (obj.colors.size() > 0) {
+    glGenBuffers(1, &obj.colorid);
+    glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*obj.colors.size(), &obj.colors[0], GL_STATIC_DRAW);
 
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
-  glVertexAttribPointer(
-      1,        // attribute. No particular reason for 1, but must match the layout in the shader.
-      3,        // size
-      GL_FLOAT, // type
-      GL_FALSE, // normalized?
-      0,        // stride
-      (void*)0  // array buffer offset
-  );
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, obj.colorid);
+    glVertexAttribPointer(
+        1,        // attribute. No particular reason for 1, but must match the layout in the shader.
+        3,        // size
+        GL_FLOAT, // type
+        GL_FALSE, // normalized?
+        0,        // stride
+        (void*)0  // array buffer offset
+    );
+    getGLError(__FILE__, __LINE__);
+  }
   // COLOR END //
   
   // NORMALS //
@@ -187,6 +217,7 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
       0,        // stride
       (void*)0  // array buffer offset
   );
+  getGLError(__FILE__, __LINE__);
   // NORMALS END //
   
   // UVS //
@@ -207,15 +238,8 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
         (void*)0  // array buffer offset
     );
   }
+  getGLError(__FILE__, __LINE__);
   // UVS END //
-
-  // TEXTURE //
-  // const char *imagepath="textures/cubetex1.bmp";
-  // const char *imagepath="textures/p51mustang.bmp";
-  // const char *imagepath="textures/uvtemplate.bmp";
-  // obj.textureid=loadBMP_custom(imagepath);
-
-  // TEXTURE END //
 
   glBindVertexArray(0);
   glDisableVertexAttribArray(0);
@@ -224,6 +248,37 @@ int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   glDisableVertexAttribArray(3);
   glBindBuffer(GL_ARRAY_BUFFER, 0); 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); 
+
+  getGLError(__FILE__, __LINE__);
+
+  // Build a bounding box
+  float maxx=-10000, minx=10000;
+  float maxy=-10000, miny=10000;
+  float maxz=-10000, minz=10000;
+  float vertexx=0, vertexy=0, vertexz=0;
+  for (unsigned int v=0; v<obj.vertices.size(); v += 3) {
+    vertexx = obj.vertices.at(v+0);
+    vertexy = obj.vertices.at(v+1);
+    vertexz = obj.vertices.at(v+2);
+    // x direction
+    if (vertexx > maxx ) maxx = vertexx;
+    if (vertexx < minx ) minx = vertexx;
+
+    // y direction
+    if (vertexy > maxy ) maxy = vertexy;
+    if (vertexy < miny ) miny = vertexy;
+    
+    // z direction
+    if (vertexz > maxz ) maxz = vertexz;
+    if (vertexz < minz ) minz = vertexz;
+  }
+
+  obj.boundingBox.at(0) = maxx;
+  obj.boundingBox.at(1) = minx;
+  obj.boundingBox.at(2) = maxy;
+  obj.boundingBox.at(3) = miny;
+  obj.boundingBox.at(4) = maxz;
+  obj.boundingBox.at(5) = minz;
 
   return 0;
 }
@@ -283,20 +338,6 @@ void SGLEngine::PrintFPS() {
   }
 }
 
-void Explode(SGLEngine::Object &obj, const double deltaTime) {
-    float vertChange = 5.0*deltaTime;
-    int rnd1 = rand() % (obj.vertices.size());
-    if(rand()/(float)RAND_MAX < 0.5) {
-      obj.vertices[rnd1] += vertChange;
-    } else {
-      obj.vertices[rnd1] -= vertChange;
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, obj.bufferid[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*obj.vertices.size(), &obj.vertices[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void SGLEngine::UpdateCamera(SGLEngine::Scene &scene, const double deltaTime) {
     scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
     scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
@@ -352,7 +393,10 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
+    // CheckCollision(scene);
+
     for(auto &obj : scene.objects) {
+      obj.DoPhys((float)deltaTime);
       obj.currentPos += obj.currentVel*(float)deltaTime;
 
       float yaw = (float)(obj.currentRot.x/360.0f*2.0f*M_PI);
@@ -361,11 +405,8 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       glm::mat4 eulerRot = glm::eulerAngleYXZ(yaw, pitch, roll);
       glm::mat4 Model = glm::translate(glm::mat4(1.0f), obj.currentPos);
       Model = glm::scale(Model, obj.scale);
-      // eulerAngleYXZ (valType const &yaw, valType const &pitch, valType const &roll)
-      // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(0.0f, 1.0f, 0.0f));
-      // Model = glm::rotate(Model, (float)(time*2.0*M_PI), glm::vec3(1.0f, 1.0f, 0.0f));
 
-      glm::mat4 MVP = Projection * View * Model * eulerRot; // Remember, matrix multiplication is the other way around
+      glm::mat4 MVP = Projection * View * Model * eulerRot;
 
       glBindVertexArray(obj.vaoid[0]);
       glUseProgram(obj.shader);
@@ -373,8 +414,10 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
       GLuint MatrixID = glGetUniformLocation(obj.shader, "MVP");
       glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-      GLuint TextureID  = glGetUniformLocation(obj.shader, "myTextureSampler");
-      glUniform1i(TextureID, 0); 
+      if (obj.usesUVs) {
+        GLuint TextureID  = glGetUniformLocation(obj.shader, "myTextureSampler");
+        glUniform1i(TextureID, 0); 
+      }
 
       if (obj.isIndexed) {
         glDrawElements(GL_TRIANGLES, obj.indices.size(), GL_UNSIGNED_INT, 0); 

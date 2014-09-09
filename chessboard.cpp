@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   cout << "o obj/cube_uv.obj 1.0 1.0 1.0" << std::endl
        << "o obj/cube_uv.obj 0.0 0.0 0.0" << std::endl
        << "o obj/cube_uv.obj 1.0 0.0 0.0" << std::endl
+       << "o obj/cube_uv.obj 0.2 0.2 0.2" << std::endl
        << "o obj/VW-new-beetle.obj 0.0 1.0 0.0" << std::endl
        << "t textures/cubetex1.bmp\ns shaders/simple.vs shaders/simple_color.fs" << endl;
   for (int nx=0; nx<Nx; nx++) {
@@ -69,10 +70,17 @@ int main(int argc, char *argv[]) {
     << xScale << " " << yScale << " " << zScale << " "
     << "0.0 0.0 0.0" << endl;
 
-  // Add an additional cube
-  xScale=1.0; yScale=1.0; zScale=1.0;
-  cout << "sc " << "3" << " 0 0 " << Nx/(float)2.0*xdelta << " " << Ny/(float)2.0*ydelta-5.5 << " " << -120 << " "
+  // Add a floor
+  xScale=100.0; yScale=0.01; zScale=100.0;
+  cout << "sc " << "3" << " 0 0 " << 0.0 << " " << -2.0 << " " << 0 << " "
     << xScale << " " << yScale << " " << zScale << " "
     << "0.0 0.0 0.0" << endl;
 
+
+  // Add an additional cube
+  xScale=1.0; yScale=1.0; zScale=1.0;
+  cout << "sc " << "4" << " 0 0 " << Nx/(float)2.0*xdelta << " " << Ny/(float)2.0*ydelta-5.5 << " " << -120 << " "
+    << xScale << " " << yScale << " " << zScale << " "
+    << "0.0 0.0 0.0" << endl;
+  
 }

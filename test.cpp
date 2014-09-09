@@ -105,22 +105,22 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     scene1.deltaCamPosition.y = 0.0;
   
   if (key == GLFW_KEY_A && action == GLFW_PRESS)
-    scene1.deltaCamRotY = 2.0*M_PI/(float)2.0;
+    scene1.deltaCamRotY = 1.5*M_PI/(float)2.0;
   if (key == GLFW_KEY_A && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
   if (key == GLFW_KEY_D && action == GLFW_PRESS)
-    scene1.deltaCamRotY = -2.0*M_PI/(float)2.0;
+    scene1.deltaCamRotY = -1.5*M_PI/(float)2.0;
   if (key == GLFW_KEY_D && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
   if (key == GLFW_KEY_R && action == GLFW_PRESS)
-    scene1.deltaCamRotZ = 2.0*M_PI/(float)2.0;
+    scene1.deltaCamRotZ = 1.5*M_PI/(float)2.0;
   if (key == GLFW_KEY_R && action == GLFW_RELEASE)
     scene1.deltaCamRotZ = 0.0;
   
   if (key == GLFW_KEY_F && action == GLFW_PRESS)
-    scene1.deltaCamRotZ = -2.0*M_PI/(float)2.0;
+    scene1.deltaCamRotZ = -1.5*M_PI/(float)2.0;
   if (key == GLFW_KEY_F && action == GLFW_RELEASE)
     scene1.deltaCamRotZ = 0.0;
   
@@ -133,9 +133,9 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
   if (key == 47 && action == GLFW_PRESS) {
     for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale -= glm::vec3(0.05f, 0.05f, 0.05f);
-      if(scene1.objects[i].scale.x < 0) scene1.objects[i].scale.x=0;
-      if(scene1.objects[i].scale.y < 0) scene1.objects[i].scale.y=0;
-      if(scene1.objects[i].scale.z < 0) scene1.objects[i].scale.z=0;
+      if(scene1.objects[i].scale.x < 0) scene1.objects[i].scale.x += 0.05;
+      if(scene1.objects[i].scale.y < 0) scene1.objects[i].scale.y += 0.05;
+      if(scene1.objects[i].scale.z < 0) scene1.objects[i].scale.z += 0.05;
     }
   }
   
@@ -163,28 +163,106 @@ int MySGLEngine::SetupScene() {
   if ( LoadScene(scene1, scenefilename) != 0) 
     return 1;
 
-  scene1.camPosition.x = -30;
+  scene1.camPosition.x = -50;
   scene1.camPosition.y = 30;
   scene1.camPosition.z = -40;
   scene1.camRotY = 0.969715;
 
-  scene1.objects.back().currentVel = glm::vec3(0.0,0.0,10.0);
+  scene1.objects.back().currentVel = glm::vec3(0.0,8.0,30.0);
 
+  for (auto &obj : scene1.objects) {
+    obj.gravG=-9.81;
+    obj.gravMass=10.0*rand()/(float)RAND_MAX + 2.0;
+    obj.physGrav=false;
+  }
+
+  scene1.objects.back().gravMass = 100.0;
+    
   return 0;
 }
 
 void Colission() {
   glm::vec3 currentVel = glm::vec3(0.0f,0.0f,0.0f);
-  static bool colHappened=false;
-  if ( std::abs(scene1.objects.back().currentPos.z + 11.0) < 1.0 && !colHappened) {
-    colHappened = true;
-    for (int i=0; i<(int)scene1.objects.size()-1; i++) {
-      if (std::abs(scene1.objects[i].currentPos.x-58.0f/2.0f) < 14.0 && std::abs(scene1.objects[i].currentPos.y - 58.0f/2.0f) < 12.0) {
-        currentVel = glm::vec3(4.0*rand()/(float)RAND_MAX-2.0, 4.0*rand()/(float)RAND_MAX - 2.0, scene1.objects.back().currentVel.z - 2.0*rand()/(float)RAND_MAX);
+  static std::vector<bool> colHappened(scene1.objects.size(),false);
+  float k=0.1;
+  if ( scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[4]*scene1.objects.back().scale.z > -scene1.objects[0].boundingBox[4]) {
+    // colHappened = true;
+      float carMass = scene1.objects.back().gravMass;
+      float carVelx = scene1.objects.back().currentVel.x;
+      float carVely = scene1.objects.back().currentVel.y;
+      float carVelz = scene1.objects.back().currentVel.z;
+
+    for (int i=0; i<(int)scene1.objects.size()-2; i++) {
+      float objMass = scene1.objects[i].gravMass;
+      float objVelx = scene1.objects[i].currentVel.x;
+      float objVely = scene1.objects[i].currentVel.y;
+      float objVelz = scene1.objects[i].currentVel.z;
+      if ( scene1.objects[i].currentPos.x + scene1.objects[i].boundingBox[1] < (scene1.objects.back().currentPos.x + scene1.objects.back().boundingBox[0]*scene1.objects.back().scale.x)
+          && scene1.objects[i].currentPos.x + scene1.objects[i].boundingBox[0] > scene1.objects.back().currentPos.x + scene1.objects.back().boundingBox[1]*scene1.objects.back().scale.x
+          && scene1.objects[i].currentPos.y + scene1.objects[i].boundingBox[3] < scene1.objects.back().currentPos.y + scene1.objects.back().boundingBox[2]*scene1.objects.back().scale.y
+          && scene1.objects[i].currentPos.y + scene1.objects[i].boundingBox[2] > scene1.objects.back().currentPos.y + scene1.objects.back().boundingBox[3]*scene1.objects.back().scale.y
+          && scene1.objects[i].currentPos.z + scene1.objects[i].boundingBox[5] < scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[4]*scene1.objects.back().scale.z
+          && scene1.objects[i].currentPos.z + scene1.objects[i].boundingBox[4] > scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[5]*scene1.objects.back().scale.z
+          && !colHappened[i]
+         ) {
+
+        colHappened[i] = true;
+
+        float newcarVelx = (carMass*carVelx
+                           + objMass*objVelx
+                           - objMass*(carVelx - objVelx)*k)
+                            / (carMass + objMass);
+        
+        float newcarVely = (carMass*carVely
+                           + objMass*objVely
+                           - objMass*(carVely - objVely)*k)
+                            / (carMass + objMass);
+        
+        float newcarVelz = (carMass*carVelz
+                           + objMass*objVelz
+                           - objMass*(carVelz - objVelz)*k)
+                            / (carMass + objMass);
+
+        scene1.objects.back().currentVel.x = newcarVelx;
+        scene1.objects.back().currentVel.y = newcarVely;
+        scene1.objects.back().currentVel.z = newcarVelz;
+        scene1.objects.back().physGrav=true;
+
+        float newobjVelx = (carMass*carVelx
+                           + objMass*objVelx
+                           - carMass*(objVelx - carVelx)*k)
+                            / (carMass + objMass);
+        
+        float newobjVely = (carMass*carVely
+                           + objMass*objVely
+                           - carMass*(objVely - carVely)*k)
+                            / (carMass + objMass);
+        
+        float newobjVelz = (carMass*carVelz
+                           + objMass*objVelz
+                           - carMass*(objVelz - carVelz)*k)
+                            / (carMass + objMass);
+        
+        currentVel = glm::vec3( newobjVelx,
+                                newobjVely,
+                                newobjVelz
+                              );
+
         scene1.objects[i].currentVel = currentVel;
+        scene1.objects[i].physGrav=true;
+        scene1.objects[i].currentRot = glm::vec3((rand()/(float)RAND_MAX-0.5)*45.0f, (rand()/(float)RAND_MAX-0.5)*45.0f, (rand()/(float)RAND_MAX-0.5)*45.0f);
+        
+        std::cout << i << " " << objMass << std::endl;
       }
     }
-    scene1.objects.back().currentVel *= 0.2;
+  }
+
+  for (unsigned int i=0; i<scene1.objects.size(); i++) {
+    if (scene1.objects[i].currentPos.y < 0.0f && i != scene1.objects.size() - 2 ) {
+      scene1.objects[i].physGrav=false;
+      scene1.objects[i].currentVel = glm::vec3(0.0f, 0.0f, 0.0f);
+      // scene1.objects[i].currentPos.y = 0.0f;
+    }
   }
 }
 
@@ -236,11 +314,9 @@ void MySGLEngine::Render() {
   std::cout << "Starting rendering thread..." << std::endl;
   std::thread t1([&] { this->RenderScene(scene1); });
 
-  InfoObject(scene1.objects[0]);
-
   struct timespec tim1;
   tim1.tv_sec=0;
-  tim1.tv_nsec=100*(1000000);
+  tim1.tv_nsec=50*(1000000);
   while (!glfwWindowShouldClose(window)) {
     // ChangeSomeStuff();
     Colission();
