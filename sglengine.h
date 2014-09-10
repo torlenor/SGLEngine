@@ -64,6 +64,7 @@ class SGLEngine {
         float gravG;
         float gravMass;
 
+        bool doColl;
         bool collDetect;
         std::vector<float> boundingBox; // +x,-x,+y,-y,+z,-z direction
 
@@ -116,6 +117,8 @@ class SGLEngine {
 
     int SetupObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
     int UpdateObject(Object &obj); // Create the VAO/VBO for an SGLEngine::Object
+    int DeleteObject(Object &obj); // Deletes VAO/VBO for an SGLEngine::Object
+    int RemoveObject(Scene &scene, unsigned int objid); // Removes object from scene 
     int SetupScene(); // Build the scene prior to rendering
 
     int LoadScene(SGLEngine::Scene &scene, std::string filename);
@@ -130,9 +133,11 @@ class SGLEngine {
 
     int ObjParser(std::string filepath, Object &out_object);
         
-    void CheckCollision(Scene &scene);
-
     void PrintFPS();
+
+    void Physics(Scene &scene);
+    void Collision(Scene &scene1);
+    bool CheckCollision(Object &obj1, Object &obj2);
     
   protected:
     GLFWwindow *window;

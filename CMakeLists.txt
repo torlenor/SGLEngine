@@ -21,13 +21,13 @@ include_directories(${GLFW_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
 # set(GL_LIBRARY GL GLU X11)
 
 set(CMAKE_BUILD_TYPE Release)
-SET(CXX_ADDITIONAL_COMPILE_FLAGS  "-O2 -Wall -std=c++11")
+SET(CXX_ADDITIONAL_COMPILE_FLAGS  "-O2 -Wall -std=c++11 -fno-strict-aliasing")
 SET(CXX_ADDITIONAL_LINK_FLAGS     "")
 SET(CXX_ADDITIONAL_LIBRARIES      "-lGLEW -lglfw3 -lXxf86vm -lpthread -lXi -lXrandr -lGL -lX11")
 
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CXX_ADDITIONAL_COMPILE_FLAGS}" )
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CXX_ADDITIONAL_LINK_FLAGS}" )
 
-add_executable(test test.cpp sglengine.cpp sglengine_objparser.cpp)
+add_executable(test sglengine.cpp sglenginephys.cpp sglengine_objparser.cpp sglengine_loadscene.cpp loadbmp.cpp test.cpp measuretime.cpp)
 
 target_link_libraries(test ${OPENGL_LIBRARY} ${X11_LIBRARIES} ${CXX_ADDITIONAL_LIBRARIES})

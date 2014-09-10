@@ -19,6 +19,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "sglengine.h"
 
@@ -28,8 +29,10 @@ SGLEngine::Scene scene1;
 
 static void key_callback_user(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback_user(GLFWwindow* window, int key, int action, int mods);
+static void mouse_move_callback_user(GLFWwindow* window, double xpos, double ypos);
 
-void BuildWalls(SGLEngine::Object &obj);
+float xOrigin = -1;
+float yOrigin = -1;
 
 class MySGLEngine : public SGLEngine {
   public:
@@ -37,6 +40,7 @@ class MySGLEngine : public SGLEngine {
     void UserInit();
     void UserKeyHandling(int key, int action, int mods);
     void UserMouseHandling(int key, int action, int mods);
+    void UserMouseMoveHandling(double xpos, double ypos);
 
   private:
     void Render();
@@ -44,19 +48,47 @@ class MySGLEngine : public SGLEngine {
 
 MySGLEngine e;
 
-void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
-  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = 10.0;
-  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE)
-    scene1.deltaCamPosition.z = 0.0;
+void GetInitialVelocity(glm::vec3 &vel) {
+  // initially we look in direction (0,0,1)
+  // we also per default shoot in direction (0,0,1)
+  vel = glm::vec3(0.0,0.0,60.0f);
+  // we now rotate the vector
+  float curCamRotY = scene1.camRotY;
+  // vel = glm::rotateY(vel, curCamRotY/((float)(360.0*M_PI*2.0)));
+  float angleY=curCamRotY;
+
+  vel = glm::vec3(cos(angleY)*vel.x + sin(angleY)*vel.z, vel.y, -sin(angleY)*vel.x + cos(angleY)*vel.z);
   
-  if (key == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {
-    Object obj = scene1.objects[0];
-    obj.currentPos = glm::vec3(rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5,rand()/(float)RAND_MAX - 0.5)*10.0f;
-    obj.currentVel = 4.0f*glm::vec3(-1.6*(rand()/(float)RAND_MAX-0.5), 1.4*(rand()/(float)RAND_MAX-0.5), 0.0);
+  std::cout << vel.x << " " << vel.y << " " << vel.z << std::endl;
+  
+}
+
+void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
+  if (key == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
+    Object obj = scene1.objects.back();
+    // obj.currentPos = glm::vec3(22.0f*rand()/(float)RAND_MAX, 22.0f*rand()/(float)RAND_MAX, -12.0f);
+    obj.currentPos = scene1.camPosition;
+    // obj.currentVel = glm::vec3(18.0*rand()/(float)RAND_MAX - 9.0, 4.0*rand()/(float)RAND_MAX,30.0);
+    glm::vec3 vel;
+    GetInitialVelocity(vel);
+    obj.currentVel = vel;
+    obj.gravMass = 100;
+    obj.physGrav = true;
+    obj.doColl = true;
     scene1.objects.push_back(obj);
   }
-  
+
+  if (key == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS) {
+      double xpos, ypos;
+      glfwGetCursorPos(window, &xpos, &ypos);
+      xOrigin = xpos;
+      yOrigin = ypos;
+  }
+  if (key == GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE) {
+      xOrigin = -1;
+      yOrigin = -1;
+  }
+
   if (key == GLFW_MOUSE_BUTTON_5 && action == GLFW_PRESS) {
     for (unsigned int i=0; i<scene1.objects.size(); i++) {
       scene1.objects[i].scale -= glm::vec3(0.1f, 0.1f, 0.1f);
@@ -74,44 +106,52 @@ void MySGLEngine::UserMouseHandling(int key, int action, int mods) {
   std:: cout << xpos << " " << ypos << std::endl;
 }
 
+void MySGLEngine::UserMouseMoveHandling(double xpos, double ypos) {
+  if (xOrigin >= 0 || yOrigin >= 0) {
+    // scene1.deltaCamRotY = -(xpos - xOrigin) * 0.01f;
+    scene1.camRotY -= (xpos - xOrigin) * 0.005f;
+    xOrigin = xpos;
+  }
+}
+
 void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
   if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = 15.0;
+    scene1.deltaCamPosition.z = 20.0;
   if (key == GLFW_KEY_W && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
   if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    scene1.deltaCamPosition.z = -15.0;
+    scene1.deltaCamPosition.z = -20.0;
   if (key == GLFW_KEY_S && action == GLFW_RELEASE)
     scene1.deltaCamPosition.z = 0.0;
   
-  if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = 15.0;
-  if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
+  if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    scene1.deltaCamPosition.x = 20.0;
+  if (key == GLFW_KEY_A && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
-  if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    scene1.deltaCamPosition.x = -15.0;
-  if (key == GLFW_KEY_E && action == GLFW_RELEASE)
+  if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    scene1.deltaCamPosition.x = -20.0;
+  if (key == GLFW_KEY_D && action == GLFW_RELEASE)
     scene1.deltaCamPosition.x = 0.0;
   
   if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    scene1.deltaCamPosition.y = -15.0;
+    scene1.deltaCamPosition.y = -20.0;
   if (key == GLFW_KEY_X && action == GLFW_RELEASE)
     scene1.deltaCamPosition.y = 0.0;
   if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    scene1.deltaCamPosition.y = 15.0;
+    scene1.deltaCamPosition.y = 20.0;
   if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
     scene1.deltaCamPosition.y = 0.0;
   
-  if (key == GLFW_KEY_A && action == GLFW_PRESS)
+  if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     scene1.deltaCamRotY = 1.5*M_PI/(float)2.0;
-  if (key == GLFW_KEY_A && action == GLFW_RELEASE)
+  if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
-  if (key == GLFW_KEY_D && action == GLFW_PRESS)
+  if (key == GLFW_KEY_E && action == GLFW_PRESS)
     scene1.deltaCamRotY = -1.5*M_PI/(float)2.0;
-  if (key == GLFW_KEY_D && action == GLFW_RELEASE)
+  if (key == GLFW_KEY_E && action == GLFW_RELEASE)
     scene1.deltaCamRotY = 0.0;
   
   if (key == GLFW_KEY_R && action == GLFW_PRESS)
@@ -143,14 +183,24 @@ void MySGLEngine::UserKeyHandling(int key, int action, int mods) {
     if ( LoadScene(scene1, scenefilename) != 0) 
       exit(1);
   }
+
+  if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+    for (auto &obj : scene1.objects ) 
+      obj.physGrav = true;
+  }
+  
 }
 
 void MySGLEngine::UserInit() {
   glfwMakeContextCurrent(window);
+
   glfwSetKeyCallback(window, key_callback_user);
   glfwSetMouseButtonCallback(window, mouse_callback_user);
 
+  glfwSetCursorPosCallback  (window, mouse_move_callback_user);
+
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glfwSetWindowTitle(window, "My OpenGL Engine");
 }
@@ -159,173 +209,46 @@ int MySGLEngine::SetupScene() {
 
   glfwMakeContextCurrent(window);
 
-  // std::string scenefile("scene.data");
   if ( LoadScene(scene1, scenefilename) != 0) 
     return 1;
 
+  // Set initial camera position
   scene1.camPosition.x = -50;
   scene1.camPosition.y = 30;
   scene1.camPosition.z = -40;
-  scene1.camRotY = 0.969715;
+  scene1.camRotY = 0.00;
+  // scene1.camRotY = 1.00;
 
-  scene1.objects.back().currentVel = glm::vec3(0.0,8.0,30.0);
+  // scene1.objects.back().currentVel = glm::vec3(0.0,16.0,40.0);
+  scene1.objects.back().currentVel = glm::vec3(0.0,0.0,0.0);
 
   for (auto &obj : scene1.objects) {
-    obj.gravG=-9.81;
-    obj.gravMass=10.0*rand()/(float)RAND_MAX + 2.0;
-    obj.physGrav=false;
+    obj.gravG = -9.81;
+    obj.gravMass = 10.0*rand()/(float)RAND_MAX + 2.0;
+    obj.physGrav = false;
+    obj.doColl = false;
   }
 
-  scene1.objects.back().gravMass = 100.0;
+  scene1.objects.back().doColl = true;
+  scene1.objects.back().physGrav = false;
+
+  scene1.objects.back().gravMass = 1000.0;
     
   return 0;
-}
-
-void Colission() {
-  glm::vec3 currentVel = glm::vec3(0.0f,0.0f,0.0f);
-  static std::vector<bool> colHappened(scene1.objects.size(),false);
-  float k=0.1;
-  if ( scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[4]*scene1.objects.back().scale.z > -scene1.objects[0].boundingBox[4]) {
-    // colHappened = true;
-      float carMass = scene1.objects.back().gravMass;
-      float carVelx = scene1.objects.back().currentVel.x;
-      float carVely = scene1.objects.back().currentVel.y;
-      float carVelz = scene1.objects.back().currentVel.z;
-
-    for (int i=0; i<(int)scene1.objects.size()-2; i++) {
-      float objMass = scene1.objects[i].gravMass;
-      float objVelx = scene1.objects[i].currentVel.x;
-      float objVely = scene1.objects[i].currentVel.y;
-      float objVelz = scene1.objects[i].currentVel.z;
-      if ( scene1.objects[i].currentPos.x + scene1.objects[i].boundingBox[1] < (scene1.objects.back().currentPos.x + scene1.objects.back().boundingBox[0]*scene1.objects.back().scale.x)
-          && scene1.objects[i].currentPos.x + scene1.objects[i].boundingBox[0] > scene1.objects.back().currentPos.x + scene1.objects.back().boundingBox[1]*scene1.objects.back().scale.x
-          && scene1.objects[i].currentPos.y + scene1.objects[i].boundingBox[3] < scene1.objects.back().currentPos.y + scene1.objects.back().boundingBox[2]*scene1.objects.back().scale.y
-          && scene1.objects[i].currentPos.y + scene1.objects[i].boundingBox[2] > scene1.objects.back().currentPos.y + scene1.objects.back().boundingBox[3]*scene1.objects.back().scale.y
-          && scene1.objects[i].currentPos.z + scene1.objects[i].boundingBox[5] < scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[4]*scene1.objects.back().scale.z
-          && scene1.objects[i].currentPos.z + scene1.objects[i].boundingBox[4] > scene1.objects.back().currentPos.z + scene1.objects.back().boundingBox[5]*scene1.objects.back().scale.z
-          && !colHappened[i]
-         ) {
-
-        colHappened[i] = true;
-
-        float newcarVelx = (carMass*carVelx
-                           + objMass*objVelx
-                           - objMass*(carVelx - objVelx)*k)
-                            / (carMass + objMass);
-        
-        float newcarVely = (carMass*carVely
-                           + objMass*objVely
-                           - objMass*(carVely - objVely)*k)
-                            / (carMass + objMass);
-        
-        float newcarVelz = (carMass*carVelz
-                           + objMass*objVelz
-                           - objMass*(carVelz - objVelz)*k)
-                            / (carMass + objMass);
-
-        scene1.objects.back().currentVel.x = newcarVelx;
-        scene1.objects.back().currentVel.y = newcarVely;
-        scene1.objects.back().currentVel.z = newcarVelz;
-        scene1.objects.back().physGrav=true;
-
-        float newobjVelx = (carMass*carVelx
-                           + objMass*objVelx
-                           - carMass*(objVelx - carVelx)*k)
-                            / (carMass + objMass);
-        
-        float newobjVely = (carMass*carVely
-                           + objMass*objVely
-                           - carMass*(objVely - carVely)*k)
-                            / (carMass + objMass);
-        
-        float newobjVelz = (carMass*carVelz
-                           + objMass*objVelz
-                           - carMass*(objVelz - carVelz)*k)
-                            / (carMass + objMass);
-        
-        currentVel = glm::vec3( newobjVelx,
-                                newobjVely,
-                                newobjVelz
-                              );
-
-        scene1.objects[i].currentVel = currentVel;
-        scene1.objects[i].physGrav=true;
-        scene1.objects[i].currentRot = glm::vec3((rand()/(float)RAND_MAX-0.5)*45.0f, (rand()/(float)RAND_MAX-0.5)*45.0f, (rand()/(float)RAND_MAX-0.5)*45.0f);
-        
-        std::cout << i << " " << objMass << std::endl;
-      }
-    }
-  }
-
-  for (unsigned int i=0; i<scene1.objects.size(); i++) {
-    if (scene1.objects[i].currentPos.y < 0.0f && i != scene1.objects.size() - 2 ) {
-      scene1.objects[i].physGrav=false;
-      scene1.objects[i].currentVel = glm::vec3(0.0f, 0.0f, 0.0f);
-      // scene1.objects[i].currentPos.y = 0.0f;
-    }
-  }
-}
-
-void ChangeSomeStuff() {
-  // std::cout << "ChangeSomeStuff() called!" << std::endl;
-  float cubesize = 58.0f;
-  SGLEngine::Object &obj = scene1.objects.back();
-    glm::vec3 currentPos = obj.currentPos;
-    glm::vec3 currentVel = obj.currentVel;
-    if (currentPos.x > cubesize) {
-      currentVel.x *= -1.0;
-      currentPos.x = cubesize;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
-    if (currentPos.x < 0) {
-      currentVel.x *= -1.0;
-      currentPos.x = 0.0;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
-    if (currentPos.y > cubesize) {
-      currentVel.y *= -1.0;
-      currentPos.y = cubesize;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
-    if (currentPos.y < -0) {
-      currentVel.y *= -1.0;
-      currentPos.y = 0.0;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
-    if (currentPos.z < -cubesize) {
-      currentVel.z *= -1.0;
-      currentPos.z = -cubesize;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
-    if (currentPos.z + 2.0 > 0) {
-      currentVel.z *= -1.0;
-      currentPos.z = -2.0;
-      obj.currentPos = currentPos;
-      obj.currentVel = currentVel;
-    }
 }
 
 void MySGLEngine::Render() {
   std::cout << "Starting rendering thread..." << std::endl;
   std::thread t1([&] { this->RenderScene(scene1); });
 
-  struct timespec tim1;
-  tim1.tv_sec=0;
-  tim1.tv_nsec=50*(1000000);
-  while (!glfwWindowShouldClose(window)) {
-    // ChangeSomeStuff();
-    Colission();
-    nanosleep(&tim1, NULL);
-  }
-  
-  std::cout << "Waiting for rendering thread to finish..." << std::endl;
+ // std::cout << "Starting physics thread..." << std::endl;
+ // std::thread t2([&] { this->Physics(scene1); });
 
+  std::cout << "Waiting for threads..." << std::endl;
   t1.join();
+  std::cout << "Rendering thread ended!" << std::endl;
+  //t2.join();
+  //std::cout << "Physics thread ended!" << std::endl;
 }
 
 static void key_callback_user(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -339,66 +262,9 @@ static void mouse_callback_user(GLFWwindow* window, int button, int action, int 
   e.UserMouseHandling(button, action, mods);
 }  
 
-void BuildWalls(SGLEngine::Object &obj) {
-  float size=58.0f; // in every direction from 0,0,0
-
-  std::vector<float> vertices, colors, normals;
-  std::vector<GLuint> indices;
-
-  GLuint triangles=0;
-  int Npoints=2;
-  for(int x=0; x<Npoints; x++) {
-    float xval = 4.0f*size*x/(float)Npoints - size;
-    for(int y=0; y<Npoints; y++) {
-      float yval = 4.0f*size*y/(float)Npoints - size;
-      for(int z=0; z<Npoints; z++) {
-        float zval = 4.0f*size*z/(float)Npoints - size;
-
-        // We need to generate the triangle now
-        glm::vec3 p1(xval, yval, zval);
-        glm::vec3 p2(0,0,0);
-        glm::vec3 p3(0,0,0);
-        vertices.push_back(p1.x); vertices.push_back(p1.y); vertices.push_back(p1.z);
-        vertices.push_back(p2.x); vertices.push_back(p2.y); vertices.push_back(p2.z);
-        vertices.push_back(p3.x); vertices.push_back(p3.y); vertices.push_back(p3.z);
-        
-        // Build normal vector using cross product vec3 = glm::cross(vec3,vec3)
-        glm::vec3 v1 = p2 - p1;
-        glm::vec3 v2 = p3 - p2;
-        glm::vec3 v3 = p1 - p3;
-        glm::vec3 normv = glm::cross(v1,v3);
-        normals.push_back(normv.x); normals.push_back(normv.y); normals.push_back(normv.z);
-        normv = glm::cross(v1,v2);
-        normals.push_back(normv.x); normals.push_back(normv.y); normals.push_back(normv.z);
-        normv = glm::cross(v2,v3);
-        normals.push_back(normv.x); normals.push_back(normv.y); normals.push_back(normv.z);
-
-        // Give them a color
-        colors.push_back((float)x);
-        colors.push_back((float)y);
-        colors.push_back((float)z);
-        colors.push_back((float)x);
-        colors.push_back((float)y);
-        colors.push_back((float)z);
-        colors.push_back((float)x);
-        colors.push_back((float)y);
-        colors.push_back((float)z);
-        
-        // Build the index for the triangle
-        indices.push_back(triangles); // 1st vertex
-        indices.push_back(triangles+1); // 2nd vertex
-        indices.push_back(triangles+2); // 3rd vertex
-
-        triangles++;
-      }
-    }
-  }
-
-  obj.vertices = vertices;
-  obj.colors = colors;
-  obj.normals = normals;
-  obj.indices = indices;
-}
+static void mouse_move_callback_user(GLFWwindow* window, double xpos, double ypos) {
+  e.UserMouseMoveHandling(xpos, ypos);
+}  
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {

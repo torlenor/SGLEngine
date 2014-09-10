@@ -34,7 +34,7 @@
 #endif
 #include <GLFW/glfw3.h>
 
-#include "loadbmp.h"
+#include "measuretime.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -49,14 +49,6 @@ void getGLError(std::string filename, int line) {
   }
 }
 
-SGLEngine::SGLEngine() {
-
-}
-
-SGLEngine::~SGLEngine() {
-
-}
-
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
@@ -64,6 +56,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void error_callback(int error, const char* description) {
   fputs(description, stderr);
+}
+
+
+
+SGLEngine::SGLEngine() {
+
+}
+
+SGLEngine::~SGLEngine() {
+
 }
 
 int SGLEngine::Init() {
@@ -110,7 +112,7 @@ int SGLEngine::Init() {
   glDepthFunc(GL_LESS);
   getGLError(__FILE__, __LINE__);
   
-  // glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
 
   return 0;
 }
@@ -138,10 +140,6 @@ void SGLEngine::InfoObject(SGLEngine::Object &obj) {
 
 int SGLEngine::SetupObject(SGLEngine::Object &obj) {
   getGLError(__FILE__, __LINE__);
-
-  // Use the shader
-  //glUseProgram(obj.shader);
-  //getGLError(__FILE__, __LINE__);
 
   std::cout << "Generating VAOs..." << std::endl;
   obj.vaoid.resize(1);
@@ -297,7 +295,40 @@ int SGLEngine::UpdateObject(SGLEngine::Object &obj) {
   return 0;
 }
 
+int SGLEngine::DeleteObject(SGLEngine::Object &obj) {
+    if (obj.textureid != 0) {
+      glDeleteTextures(1, &obj.textureid);
+      obj.textureid = 0;
+    }
+
+    if (obj.bufferid[0] != 0) {
+        glDeleteBuffers(obj.bufferid.size(), &obj.bufferid[0]);
+        obj.bufferid[0] = 0;
+    }
+    
+    if (obj.colorid != 0) {
+        glDeleteBuffers(1, &obj.colorid);
+        obj.colorid = 0;
+    }
+       
+    if (obj.vaoid[0] != 0) {
+        glDeleteVertexArrays(obj.vaoid.size(), &obj.vaoid[0]);
+        obj.vaoid[0] = 0;
+    } 
+
+    return 0;
+}
+
+int SGLEngine::RemoveObject(SGLEngine::Scene &scene, unsigned int objid) {
+  SGLEngine::Object obj = scene.objects.at(objid);
+  scene.objects.erase(scene.objects.begin() + objid);
+  DeleteObject(obj);
+
+  return 0;
+}
+
 int SGLEngine::SetupScene() {
+  // has to be implemented in derived class
   
   return 0;
 }
@@ -339,8 +370,20 @@ void SGLEngine::PrintFPS() {
 }
 
 void SGLEngine::UpdateCamera(SGLEngine::Scene &scene, const double deltaTime) {
-    scene.camRotY += scene.deltaCamRotY*(float)(deltaTime);
-    scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime);
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    static double xorigin=xpos;
+
+    scene.camRotY += scene.deltaCamRotY*(float)(deltaTime) - (xpos-xorigin)*(float)deltaTime*0.1;
+    glfwSetCursorPos(window, 600, 400);
+    xorigin=600;
+
+    static double yorigin=ypos;
+
+    scene.camRotZ += scene.deltaCamRotZ*(float)(deltaTime) - (ypos-yorigin)*(float)deltaTime*0.1;
+    glfwSetCursorPos(window, 600, 400);
+    yorigin=400;
+
     scene.camPosition.x += cos(scene.camRotY)*scene.deltaCamPosition.x*(float)deltaTime
                           +sin(scene.camRotY)*scene.deltaCamPosition.z*(float)deltaTime;
     scene.camPosition.y += scene.deltaCamPosition.y*(float)deltaTime;
@@ -385,16 +428,16 @@ void SGLEngine::RenderScene(SGLEngine::Scene &scene) {
     UpdateCamera(scene, deltaTime);
 
     // FOVY is in radiant
-    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), ratio, 0.1f, 200.0f);
+    glm::mat4 Projection = glm::perspective((float)(70.0f/360.0f*2.0f*M_PI), ratio, 0.1f, 1000.0f);
 
     glm::mat4 View = glm::lookAt(
       scene.camPosition, // Camera in World Space
       scene.camPosition + glm::vec3(sin(scene.camRotY), sin(scene.camRotZ), cos(scene.camRotY)), // and look at
       glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-    );
+    ); 
 
-    // CheckCollision(scene);
-
+    Collision(scene);
+      
     for(auto &obj : scene.objects) {
       obj.DoPhys((float)deltaTime);
       obj.currentPos += obj.currentVel*(float)deltaTime;
@@ -515,3 +558,71 @@ GLuint SGLEngine::LoadShaders(const char* vertFileName, const char* geomFileName
   return prog;
 }
 
+bool SGLEngine::CheckCollision(SGLEngine::Object &obj1, SGLEngine::Object &obj2) {
+  // returns true if collision between obj1 and obj2
+  if ( obj2.currentPos.x + obj2.boundingBox[1]*obj2.scale.x < (obj1.currentPos.x + obj1.boundingBox[0]*obj1.scale.x)
+      && obj2.currentPos.x + obj2.boundingBox[0]*obj2.scale.x > obj1.currentPos.x + obj1.boundingBox[1]*obj1.scale.x
+      && obj2.currentPos.y + obj2.boundingBox[3]*obj2.scale.y < obj1.currentPos.y + obj1.boundingBox[2]*obj1.scale.y
+      && obj2.currentPos.y + obj2.boundingBox[2]*obj2.scale.y > obj1.currentPos.y + obj1.boundingBox[3]*obj1.scale.y
+      && obj2.currentPos.z + obj2.boundingBox[5]*obj2.scale.z < obj1.currentPos.z + obj1.boundingBox[4]*obj1.scale.z
+      && obj2.currentPos.z + obj2.boundingBox[4]*obj2.scale.z > obj1.currentPos.z + obj1.boundingBox[5]*obj1.scale.z
+   ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+void CalcNewVel(const glm::vec3 &v1, const glm::vec3 &v2, float m1, float m2, glm::vec3 &newv1, glm::vec3 &newv2) {
+  float k = 0.2;
+  float tmass = m1+m2;
+  
+  newv1.x = (m1*v1.x + m2*v2.x - k*m2*(v1.x - v2.x)) / tmass;
+  newv1.y = (m1*v1.y + m2*v2.y - k*m2*(v1.y - v2.y)) / tmass;
+  newv1.z = (m1*v1.z + m2*v2.z - k*m2*(v1.z - v2.z)) / tmass;
+
+  newv2.x = (m1*v1.x + m2*v2.x - k*m1*(v2.x - v1.x)) / tmass;
+  newv2.y = (m1*v1.y + m2*v2.y - k*m1*(v2.y - v1.y)) / tmass;
+  newv2.z = (m1*v1.z + m2*v2.z - k*m1*(v2.z - v1.z)) / tmass;
+}
+
+void SGLEngine::Collision(SGLEngine::Scene &scene1) {
+  for (int j=0; j<(int)scene1.objects.size(); j++) {
+    if (scene1.objects[j].doColl) {
+    SGLEngine::Object &obj1 = scene1.objects[j];
+      for (int i=0; i<(int)scene1.objects.size(); i++) {
+        if ( i != j ) {
+          SGLEngine::Object &obj2 = scene1.objects[i];
+          if (CheckCollision(obj1, obj2)) {
+            obj1.physGrav=true;
+            obj2.physGrav=true;
+
+            CalcNewVel(obj1.currentVel, obj2.currentVel,  obj1.gravMass, obj2.gravMass, obj1.currentVel, obj2.currentVel);
+
+            obj2.currentRot += glm::vec3((rand()/(float)RAND_MAX-0.5)*15.0f, (rand()/(float)RAND_MAX-0.5)*15.0f, (rand()/(float)RAND_MAX-0.5)*15.0f);
+          }
+        }
+      }
+    }
+  }
+
+  for (unsigned int i=0; i<scene1.objects.size(); i++) {
+    if (scene1.objects[i].currentPos.y < 0.0f && i != scene1.objects.size() ) {
+      scene1.objects[i].physGrav=false;
+      scene1.objects[i].doColl = false;
+      scene1.objects[i].currentVel = glm::vec3(0.0f, 0.0f, 0.0f);
+      // scene1.objects[i].currentPos.y = 0.0f;
+    }
+  }
+}
+
+void SGLEngine::Physics(SGLEngine::Scene &scene) {
+  struct timespec tim1;
+  tim1.tv_sec=0;
+  tim1.tv_nsec=100*(1000000);
+  while (!glfwWindowShouldClose(window)) {
+    Collision(scene);
+    nanosleep(&tim1, NULL);
+  }
+}

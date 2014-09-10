@@ -73,6 +73,10 @@ int SGLEngine::LoadScene(SGLEngine::Scene &scene, std::string filename) {
         return 1;
       }
       GLuint textureid = loadBMP_custom(texturefile);
+      if (textureid == 0) {
+        std::cout << "ERROR: Reading texture file!" << std::endl;
+        return 1;
+      }
       textureList.push_back(textureid);
     }
 
